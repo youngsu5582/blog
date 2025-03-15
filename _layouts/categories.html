@@ -7,132 +7,217 @@ layout: page
 
 {% assign HEAD_PREFIX = 'h_' %}
 {% assign LIST_PREFIX = 'l_' %}
-
 {% assign group_index = 0 %}
 
-{% assign sort_categories = site.categories | sort %}
+{% assign cat_list = "" | split: "" %}  <!-- 상위 카테고리 정렬용 -->
 
-{% for category in sort_categories %}
-  {% assign category_name = category | first %}
-  {% assign posts_of_category = category | last %}
-  {% assign first_post = posts_of_category | first %}
+{% for cat in site.categories %}
+{% assign cat_name = cat[0] %}
+{% assign cat_posts = cat[1] %}
 
-  {% if category_name == first_post.categories[0] %}
-    {% assign sub_categories = '' | split: '' %}
+{% assign top_level_posts = "" | split: "" %}
+{% for p in cat_posts %}
+{% if p.categories.size > 0 and p.categories[0] == cat_name %}
+{% unless top_level_posts contains p.url %}
+{% assign top_level_posts = top_level_posts | push: p.url %}
+{% endunless %}
+{% endif %}
+{% endfor %}
 
-    {% for post in posts_of_category %}
-      {% assign second_category = post.categories[1] %}
-      {% if second_category %}
-        {% unless sub_categories contains second_category %}
-          {% assign sub_categories = sub_categories | push: second_category %}
-        {% endunless %}
-      {% endif %}
-    {% endfor %}
+{% if top_level_posts.size > 0 %}
+{% assign sub_categories = "" | split: "" %}
+{% for p in site.posts %}
+{% if p.categories.size > 1 and p.categories[0] == cat_name %}
+{% assign second_category = p.categories[1] %}
+{% unless sub_categories contains second_category %}
+{% assign sub_categories = sub_categories | push: second_category %}
+{% endunless %}
+{% endif %}
+{% endfor %}
 
-    {% assign sub_categories = sub_categories | sort %}
-    {% assign sub_categories_size = sub_categories | size %}
+{% assign all_posts_for_this_top_category = top_level_posts %}
+{% for sc in sub_categories %}
+{% for p in site.categories[sc] %}
+{% if p.categories.size > 0 and p.categories[0] == cat_name %}
+{% unless all_posts_for_this_top_category contains p.url %}
+{% assign all_posts_for_this_top_category = all_posts_for_this_top_category | push: p.url %}
+{% endunless %}
+{% endif %}
+{% endfor %}
+{% endfor %}
 
-    <div class="card categories">
-      <!-- top-category -->
-      <div
-        id="{{ HEAD_PREFIX }}{{ group_index }}"
-        class="card-header d-flex justify-content-between hide-border-bottom"
-      >
-        <span class="ms-2">
-          <i class="far fa-folder{% if sub_categories_size > 0 %}-open{% endif %} fa-fw"></i>
+{% assign total_posts_count = all_posts_for_this_top_category.size %}
+{% assign padded_count = total_posts_count | plus: 100000 | append: '' | slice: 1, 5 %}
+{% assign item = padded_count | append: '__' | append: cat_name %}
+{% assign cat_list = cat_list | push: item %}
+{% endif %}
+{% endfor %}
 
-          {% capture _category_url %}/categories/{{ category_name | slugify | url_encode }}/{% endcapture %}
-          <a href="{{ _category_url | relative_url }}" class="mx-2">{{ category_name }}</a>
+{% assign cat_list = cat_list | sort %}
+{% assign cat_list = cat_list | reverse %}
 
-          <!-- content count -->
-          {% assign top_posts_size = site.categories[category_name] | size %}
-          <span class="text-muted small font-weight-light">
-            {% if sub_categories_size > 0 %}
-              {{ sub_categories_size }}
-              {% if sub_categories_size > 1 %}
-                {{
-                  site.data.locales[lang].categories.category_measure.plural
-                  | default: site.data.locales[lang].categories.category_measure
-                }}
-              {% else %}
-                {{
-                  site.data.locales[lang].categories.category_measure.singular
-                  | default: site.data.locales[lang].categories.category_measure
-                }}
-              {% endif -%}
-              ,
-            {% endif %}
+{% for cat_item in cat_list %}
+{% assign splitted = cat_item | split: '__' %}
+{% assign padded_count = splitted[0] %}
+{% assign category_name = splitted[1] %}
+{% assign cat_total_count = padded_count | plus: 0 %}  <!-- 정렬용 숫자 (표시 안 함) -->
 
-            {{ top_posts_size }}
+{%- comment -%}
+"이 상위 카테고리"의 직접 포스트들
+=> 첫 번째 카테고리가 category_name 인 것만
+{%- endcomment -%}
+{% assign posts_of_category = "" | split: "" %}
+{% for p in site.categories[category_name] %}
+{% if p.categories.size > 0 and p.categories[0] == category_name %}
+{% unless posts_of_category contains p.url %}
+{% assign posts_of_category = posts_of_category | push: p.url %}
+{% endunless %}
+{% endif %}
+{% endfor %}
+{% assign top_posts_size = posts_of_category.size %}
 
-            {% if top_posts_size > 1 %}
+{%- comment -%}
+하위 카테고리 목록 + 각각 포스트 수
+{%- endcomment -%}
+{% assign sub_categories = "" | split: "" %}
+{% for purl in posts_of_category %}
+{% assign post_obj = site.posts | where: 'url', purl | first %}
+{% if post_obj and post_obj.categories.size > 1 %}
+{% assign second_cat = post_obj.categories[1] %}
+{% unless sub_categories contains second_cat %}
+{% assign sub_categories = sub_categories | push: second_cat %}
+{% endunless %}
+{% endif %}
+{% endfor %}
+
+{%- comment -%}
+하위 카테고리도 포스트 수 내림차순 정렬
+=> zero-padding + sort + reverse
+{%- endcomment -%}
+{% assign subcat_list = "" | split: "" %}
+{% for sc in sub_categories %}
+{% assign subcat_posts = "" | split: "" %}
+{% for sp in site.categories[sc] %}
+{% if sp.categories.size > 0 and sp.categories[0] == category_name %}
+{% unless subcat_posts contains sp.url %}
+{% assign subcat_posts = subcat_posts | push: sp.url %}
+{% endunless %}
+{% endif %}
+{% endfor %}
+
+{% assign subcat_count = subcat_posts.size %}
+{% assign padded_subcat_count = subcat_count | plus: 100000 | append: '' | slice: 1, 5 %}
+{% assign subcat_item = padded_subcat_count | append: '__' | append: sc %}
+{% assign subcat_list = subcat_list | push: subcat_item %}
+{% endfor %}
+
+{% assign subcat_list = subcat_list | sort %}
+{% assign subcat_list = subcat_list | reverse %}
+{% assign sub_categories_size = subcat_list.size %}
+
+<!-- 실제 카드 UI -->
+<div class="card categories">
+  <!-- top-category -->
+  <div
+    id="{{ HEAD_PREFIX }}{{ group_index }}"
+    class="card-header d-flex justify-content-between hide-border-bottom"
+  >
+      <span class="ms-2">
+        <i class="far fa-folder{% if sub_categories_size > 0 %}-open{% endif %} fa-fw"></i>
+
+        {%- comment -%}
+          ★ 상위 카테고리명만 표시 (숫자 제거)
+        {%- endcomment -%}
+        {% capture _category_url %}/categories/{{ category_name | slugify | url_encode }}/{% endcapture %}
+        <a href="{{ _category_url | relative_url }}" class="mx-2">
+          {{ category_name }}
+        </a>
+
+        {%- comment -%}
+          ★ 오른쪽에 "N categories, M posts" 식 표시
+        {%- endcomment -%}
+        <span class="text-muted small font-weight-light">
+          {% if sub_categories_size > 0 %}
+            {{ sub_categories_size }}
+            {% if sub_categories_size > 1 %}
               {{
-                site.data.locales[lang].categories.post_measure.plural
-                | default: site.data.locales[lang].categories.post_measure
+                site.data.locales[lang].categories.category_measure.plural
+                | default: 'categories'
               }}
             {% else %}
               {{
-                site.data.locales[lang].categories.post_measure.singular
-                | default: site.data.locales[lang].categories.post_measure
+                site.data.locales[lang].categories.category_measure.singular
+                | default: 'category'
               }}
-            {% endif %}
-          </span>
+            {% endif %},
+          {% endif %}
+
+          {{ top_posts_size }}
+          {% if top_posts_size > 1 %}
+            {{
+              site.data.locales[lang].categories.post_measure.plural
+              | default: 'posts'
+            }}
+          {% else %}
+            {{
+              site.data.locales[lang].categories.post_measure.singular
+              | default: 'post'
+            }}
+          {% endif %}
         </span>
+      </span>
 
-        <!-- arrow -->
-        {% if sub_categories_size > 0 %}
-          <a
-            href="#{{ LIST_PREFIX }}{{ group_index }}"
-            data-bs-toggle="collapse"
-            aria-expanded="true"
-            aria-label="{{ HEAD_PREFIX }}{{ group_index }}-trigger"
-            class="category-trigger hide-border-bottom"
-          >
-            <i class="fas fa-fw fa-angle-down"></i>
-          </a>
-        {% else %}
-          <span data-bs-toggle="collapse" class="category-trigger hide-border-bottom disabled">
-            <i class="fas fa-fw fa-angle-right"></i>
-          </span>
-        {% endif %}
-      </div>
-      <!-- .card-header -->
+    <!-- arrow -->
+    {% if sub_categories_size > 0 %}
+    <a
+      href="#{{ LIST_PREFIX }}{{ group_index }}"
+      data-bs-toggle="collapse"
+      aria-expanded="true"
+      aria-label="{{ HEAD_PREFIX }}{{ group_index }}-trigger"
+      class="category-trigger hide-border-bottom"
+    >
+      <i class="fas fa-fw fa-angle-down"></i>
+    </a>
+    {% else %}
+    <span data-bs-toggle="collapse" class="category-trigger hide-border-bottom disabled">
+          <i class="fas fa-fw fa-angle-right"></i>
+        </span>
+    {% endif %}
+  </div>
+  <!-- .card-header -->
 
-      <!-- Sub-categories -->
-      {% if sub_categories_size > 0 %}
-        <div id="{{ LIST_PREFIX }}{{ group_index }}" class="collapse show" aria-expanded="true">
-          <ul class="list-group">
-            {% for sub_category in sub_categories %}
-              <li class="list-group-item">
-                <i class="far fa-folder fa-fw"></i>
+  <!-- Sub-categories -->
+  {% if sub_categories_size > 0 %}
+  <div id="{{ LIST_PREFIX }}{{ group_index }}" class="collapse show" aria-expanded="true">
+    <ul class="list-group">
+      {% for subcat_item in subcat_list %}
+      {% assign splitted2 = subcat_item | split: '__' %}
+      {% assign padded_subcat_count = splitted2[0] %}
+      {% assign sub_category = splitted2[1] %}
+      {% assign real_subcat_count = padded_subcat_count | plus: 0 %}
 
-                {% capture _sub_ctg_url %}/categories/{{ sub_category | slugify | url_encode }}/{% endcapture %}
-                <a href="{{ _sub_ctg_url | relative_url }}" class="mx-2">{{ sub_category }}</a>
+      <li class="list-group-item">
+        <i class="far fa-folder fa-fw"></i>
 
-                {% assign posts_size = site.categories[sub_category] | size %}
-                <span class="text-muted small font-weight-light">
-                  {{ posts_size }}
+        {% capture _sub_ctg_url %}/categories/{{ sub_category | slugify | url_encode }}/{% endcapture %}
+        <a href="{{ _sub_ctg_url | relative_url }}" class="mx-2">{{ sub_category }}</a>
 
-                  {% if posts_size > 1 %}
-                    {{
-                      site.data.locales[lang].categories.post_measure.plural
-                      | default: site.data.locales[lang].categories.post_measure
-                    }}
-                  {% else %}
-                    {{
-                      site.data.locales[lang].categories.post_measure.singular
-                      | default: site.data.locales[lang].categories.post_measure
-                    }}
-                  {% endif %}
-                </span>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
-    </div>
-    <!-- .card -->
-
-    {% assign group_index = group_index | plus: 1 %}
+        {%- comment -%}
+        ★ 하위 카테고리: "스프링 7 posts" 처럼 표시
+        {%- endcomment -%}
+        <span class="text-muted small font-weight-light">
+                {{ real_subcat_count }}
+                {% if real_subcat_count == 1 %} post
+                {% else %} posts
+                {% endif %}
+              </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
   {% endif %}
+</div>
+<!-- .card -->
+
+{% assign group_index = group_index | plus: 1 %}
 {% endfor %}
