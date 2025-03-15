@@ -1,197 +1,272 @@
 @mixin styles {
+  /* 라이트 테마 */
+  color-scheme: light;
+
   /* Framework color */
-  --main-bg: white;
-  --mask-bg: #c1c3c5;
-  --main-border-color: #f3f3f3;
+  /* 밝은 톤(#E3F2FD)을 살짝 어둡게 조정한 예시: #D0ECF7 */
+  --main-bg: #D0ECF7;
+  --mask-bg: #B3E5FC;
+  --main-border-color: #90CAF9;
 
   /* Common color */
-  --text-color: #34343c;
-  --text-muted-color: #757575;
-  --text-muted-highlight-color: inherit;
-  --heading-color: #2a2a2a;
-  --label-color: #585858;
-  --blockquote-border-color: #eeeeee;
-  --blockquote-text-color: #757575;
-  --link-color: #0056b2;
-  --link-underline-color: #dee2e6;
-  --button-bg: #ffffff;
-  --btn-border-color: #e9ecef;
-  --btn-backtotop-color: #686868;
-  --btn-backtotop-border-color: #f1f1f1;
-  --checkbox-color: #c5c5c5;
-  --checkbox-checked-color: #07a8f7;
-  --img-bg: radial-gradient(
-    circle,
-    rgb(255, 255, 255) 0%,
-    rgb(239, 239, 239) 100%
-  );
+  /* 텍스트는 진한 회색~검정으로 가독성 확보 */
+  --text-color: #2E2E2E;
+  --text-muted-color: #5f6368;
+  --text-muted-highlight-color: #868686;
+  /* 헤딩은 조금 더 채도가 높은 파랑: #1976D2 */
+  --heading-color: #1976D2;
+  --label-color: #5E92F3;
+  --blockquote-border-color: #90CAF9;
+  --blockquote-text-color: #5f6368;
+  /* 링크와 링크 밑줄은 진한 파랑 계열로 대비감을 높임 */
+  --link-color: #1E88E5;
+  --link-underline-color: #1565C0;
+  /* 버튼 배경은 Light Blue 100 (#B3E5FC) 정도로 맞춤 */
+  --button-bg: #B3E5FC;
+  --btn-border-color: #90CAF9;
+  --btn-backtotop-color: var(--text-color);
+  --btn-backtotop-border-color: #90CAF9;
+  /* 카드 헤더는 메인 BG보다 조금 더 짙게 */
+  --card-header-bg: #AEDBF9;
+  --checkbox-color: #5f6368;
+  --checkbox-checked-color: var(--link-color);
+  /* 이미지나 배경에 사용하는 그라디언트 */
+  --img-bg: radial-gradient(circle, #D0ECF7 0%, #B3E5FC 100%);
+  /* 시머(Shimmer) 효과는 기존 그대로 */
   --shimmer-bg: linear-gradient(
     90deg,
-    rgba(250, 250, 250, 0) 0%,
-    rgba(232, 230, 230, 1) 50%,
-    rgba(250, 250, 250, 0) 100%
+    rgba(255, 255, 255, 0) 0%,
+    rgba(58, 55, 55, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
   );
 
   /* Sidebar */
-  --site-title-color: rgb(113, 113, 113);
-  --site-subtitle-color: #717171;
-  --sidebar-bg: #f6f8fa;
-  --sidebar-border-color: #efefef;
-  --sidebar-muted-color: #545454;
-  --sidebar-active-color: #1d1d1d;
-  --sidebar-hover-bg: rgb(223, 233, 241, 0.64);
-  --sidebar-btn-bg: white;
-  --sidebar-btn-color: #8e8e8e;
-  --avatar-border-color: white;
+  /* 사이드바는 하늘색 그라디언트를 조금 더 부드럽게 연결 */
+  --site-title-color: #616161;
+  --site-subtitle-color: rgba(30, 30, 30, 0.95);
+  --sidebar-bg: linear-gradient(
+    45deg,
+    #d0ecf7 0%,
+    #b3e5fc 30%,
+    #81d4fa 60%,
+    #0277bd 100%
+  );
+  --sidebar-border-color: #90CAF9;
+  --sidebar-muted-color: #5f6368;
+  --sidebar-active-color: rgba(0, 0, 0, 0.95);
+  /* hover 시에 너무 어둡지 않도록 메인 BG보다 살짝 짙게 */
+  --sidebar-hover-bg: #c2e0f5;
+  --sidebar-btn-bg: #bbdefb;
+  --sidebar-btn-color: #4f5b62;
+  --avatar-border-color: rgba(30, 30, 30, 0.9);
 
   /* Topbar */
-  --topbar-bg: rgb(255, 255, 255, 0.7);
-  --topbar-text-color: rgb(78, 78, 78);
-  --search-border-color: rgb(240, 240, 240);
-  --search-icon-color: #c2c6cc;
-  --input-focus-border-color: #b8b8b8;
+  /* 톱바 배경 투명도는 유지하되, 조금 더 어둡게 */
+  --topbar-bg: rgba(208, 236, 247, 0.8);
+  --topbar-text-color: var(--text-color);
+  --search-border-color: #90CAF9;
+  --search-icon-color: #5f6368;
+  --input-focus-border-color: #42A5F5;
 
   /* Home page */
-  --post-list-text-color: dimgray;
-  --btn-patinator-text-color: #555555;
-  --btn-paginator-hover-color: var(--sidebar-bg);
+  --post-list-text-color: #2c2c2c;
+  --btn-patinator-text-color: var(--text-color);
+  --btn-paginator-hover-color: #aedbf9;
 
   /* Posts */
-  --toc-highlight: #0550ae;
-  --toc-popup-border-color: lightgray;
-  --btn-share-color: gray;
-  --btn-share-hover-color: #0d6efd;
-  --card-bg: white;
-  --card-hovor-bg: #e2e2e2;
-  --card-shadow: rgb(104, 104, 104, 0.05) 0 2px 6px 0,
-    rgba(211, 209, 209, 0.15) 0 0 0 1px;
-  --footnote-target-bg: lightcyan;
-  --tb-odd-bg: #fbfcfd;
-  --tb-border-color: #eaeaea;
-  --dash-color: silver;
-  --kbd-wrap-color: #bdbdbd;
-  --kbd-text-color: var(--text-color);
-  --kbd-bg-color: white;
-  --prompt-text-color: rgb(46, 46, 46, 0.77);
-  --prompt-tip-bg: rgb(123, 247, 144, 0.2);
-  --prompt-tip-icon-color: #03b303;
-  --prompt-info-bg: #e1f5fe;
-  --prompt-info-icon-color: #0070cb;
-  --prompt-warning-bg: rgb(255, 243, 205);
-  --prompt-warning-icon-color: #ef9c03;
-  --prompt-danger-bg: rgb(248, 215, 218, 0.56);
-  --prompt-danger-icon-color: #df3c30;
+  --toc-highlight: #64b5f6;
+  --toc-popup-border-color: #90CAF9;
+  --tag-hover: #bbdefb;
+  --tb-odd-bg: #e1f2fc; /* 게시글 표의 홀수 행(조금 더 어둡게) */
+  --tb-even-bg: #d2ecf9; /* 게시글 표의 짝수 행 */
+  --tb-border-color: var(--tb-odd-bg);
+  --footnote-target-bg: #1976d2;
+  --btn-share-color: #5f6368;
+  --btn-share-hover-color: #4f5b62;
+  /* 카드 배경은 main-bg와 유사하지만 살짝 더 밝게 */
+  --card-bg: #d9f0fb;
+  --card-hovor-bg: #c2e0f5;
+  --card-shadow: rgba(30, 136, 229, 0.2) 0 6px 18px 0,
+    rgba(137, 135, 135, 0.24) 0 0 0 1px;
+  --kbd-wrap-color: #6a6a6a;
+  --kbd-text-color: #1e1e1e;
+  --kbd-bg-color: #bbdefb;
+  --prompt-text-color: rgba(30, 30, 30, 0.75);
+  --prompt-tip-bg: rgba(22, 60, 36, 0.64);
+  --prompt-tip-icon-color: rgba(15, 164, 15, 0.81);
+  --prompt-info-bg: rgba(7, 59, 104, 0.8);
+  --prompt-info-icon-color: #0075d1;
+  --prompt-warning-bg: rgba(90, 69, 3, 0.88);
+  --prompt-warning-icon-color: rgba(255, 165, 0, 0.8);
+  --prompt-danger-bg: rgba(86, 28, 8, 0.8);
+  --prompt-danger-icon-color: #cd0202;
 
   /* Tags */
-  --tag-border: #dee2e6;
-  --tag-shadow: var(--btn-border-color);
-  --tag-hover: rgb(222, 226, 230);
-  --search-tag-bg: #f8f9fa;
+  --tag-border: #90CAF9;
+  --tag-shadow: #90CAF9;
+  --dash-color: #64b5f6;
+  --search-tag-bg: #bbdefb;
 
   /* Categories */
-  --categories-border: rgba(0, 0, 0, 0.125);
-  --categories-hover-bg: var(--btn-border-color);
-  --categories-icon-hover-color: darkslategray;
+  --categories-border: rgba(100, 181, 246, 0.5);
+  --categories-hover-bg: #90CAF9;
+  --categories-icon-hover-color: #1e1e1e;
 
   /* Archive */
-  --timeline-color: rgba(0, 0, 0, 0.075);
-  --timeline-node-bg: #c2c6cc;
-  --timeline-year-dot-color: #ffffff;
+  --timeline-node-bg: #64b5f6;
+  --timeline-color: #90CAF9;
+  --timeline-year-dot-color: var(--timeline-color);
 
-  /* --- Custom code light mode colors --- */
-  --language-border-color: #ececec;
-  --highlight-bg-color: #f6f8fa;
-  --highlighter-rouge-color: #3f596f;
-  --highlight-lineno-color: #9e9e9e;
-  --inline-code-bg: rgba(25, 25, 28, 0.05);
-  --code-color: #3a3a3a;
-  --code-header-text-color: #a3a3a3;
-  --code-header-muted-color: #e5e5e5;
-  --code-header-icon-color: #c9c8c8;
-  --clipboard-checked-color: #43c743;
+  /* Code highlight colors */
+  --language-border-color: #BBDEFB;
+  /* 코드 블록 배경도 메인 BG보다 조금 더 연한 색 */
+  --highlight-bg-color: #ECF7FD;
+  --highlighter-rouge-color: #1565C0;
+  --highlight-lineno-color: #5f6368;
+  --inline-code-bg: rgba(255, 255, 255, 0.05);
+  --code-color: #0d47a1;
+  --code-header-text-color: #5f6368;
+  --code-header-muted-color: #8f8f8f;
+  --code-header-icon-color: #1565c0;
+  --clipboard-checked-color: #2bcc2b;
+  --filepath-text-color: #1565c0;
 
-  [class^='prompt-'] {
-    --link-underline-color: rgb(219, 216, 216);
+  /* 라이트 테마 노출 */
+  .light {
+    display: block;
   }
 
-  .dark {
-    display: none;
+  /* Categories */
+  .categories.card,
+  .list-group-item {
+    background-color: var(--card-bg);
   }
 
-  /* --- Syntax highlight theme from `rougify style github` --- */
+  .categories {
+    .card-header {
+      background-color: var(--card-header-bg);
+    }
 
+    .list-group-item {
+      border-left: none;
+      border-right: none;
+      padding-left: 2rem;
+      border-color: var(--categories-border);
+
+      &:last-child {
+        border-bottom-color: var(--card-bg);
+      }
+    }
+  }
+
+  /* Archive 배경: 이전보다 살짝 짙은 하늘색 */
+  #archives li:nth-child(odd) {
+    background-image: linear-gradient(
+      to left,
+      #d2ecf9,
+      #e1f2fc,
+      #e1f2fc,
+      #e1f2fc,
+      #d2ecf9
+    );
+  }
+
+  /* stylelint-disable-next-line selector-id-pattern */
+  #disqus_thread {
+    color-scheme: none;
+  }
+
+  /* --- Syntax highlight(라이트) --- */
+  .highlight .gp {
+    color: #607d8b;
+  }
   .highlight table td {
     padding: 5px;
   }
-
   .highlight table pre {
     margin: 0;
   }
-
   .highlight,
   .highlight .w {
-    color: #24292f;
-    background-color: #f6f8fa;
+    color: #0d47a1;
+    background-color: var(--highlight-bg-color);
   }
-
+  .highlight .err {
+    color: #e3f2fd;
+    background-color: #ff5722;
+  }
+  .highlight .c,
+  .highlight .ch,
+  .highlight .cd,
+  .highlight .cm,
+  .highlight .cpf,
+  .highlight .c1,
+  .highlight .cs {
+    color: #616161;
+  }
+  .highlight .cp,
+  .highlight .nt {
+    color: #ff9800;
+  }
+  .highlight .o,
+  .highlight .ow,
+  .highlight .p,
+  .highlight .pi {
+    color: #0d47a1;
+  }
+  .highlight .gi {
+    color: #4caf50;
+  }
+  .highlight .gd {
+    color: #f44336;
+    background-color: #ffcdd2;
+  }
+  .highlight .gh {
+    color: #2196f3;
+    background-color: #ecf7fd;
+    font-weight: bold;
+  }
   .highlight .k,
-  .highlight .kd,
   .highlight .kn,
   .highlight .kp,
   .highlight .kr,
-  .highlight .kt,
   .highlight .kv {
-    color: #cf222e;
+    color: #ab47bc;
   }
-
-  .highlight .gr {
-    color: #f6f8fa;
+  .highlight .kc,
+  .highlight .kt,
+  .highlight .kd {
+    color: #ef6c00;
   }
-
-  .highlight .gd {
-    color: #82071e;
-    background-color: #ffebe9;
+  .highlight .s,
+  .highlight .sb,
+  .highlight .sc,
+  .highlight .dl,
+  .highlight .sd,
+  .highlight .s2,
+  .highlight .sh,
+  .highlight .sx,
+  .highlight .s1 {
+    color: #43a047;
   }
-
-  .highlight .nb {
-    color: #953800;
+  .highlight .sa {
+    color: #ab47bc;
   }
-
-  .highlight .nc {
-    color: #953800;
-  }
-
-  .highlight .no {
-    color: #953800;
-  }
-
-  .highlight .nn {
-    color: #953800;
-  }
-
   .highlight .sr {
-    color: #116329;
+    color: #26a69a;
   }
-
+  .highlight .si,
+  .highlight .se {
+    color: #8d6e63;
+  }
+  .highlight .nn,
+  .highlight .nc,
+  .highlight .no {
+    color: #ff9800;
+  }
   .highlight .na {
-    color: #116329;
+    color: #2196f3;
   }
-
-  .highlight .nt {
-    color: #116329;
-  }
-
-  .highlight .gi {
-    color: #116329;
-    background-color: #dafbe1;
-  }
-
-  .highlight .kc {
-    color: #0550ae;
-  }
-
-  .highlight .l,
-  .highlight .ld,
   .highlight .m,
   .highlight .mb,
   .highlight .mf,
@@ -199,115 +274,8 @@
   .highlight .mi,
   .highlight .il,
   .highlight .mo,
-  .highlight .mx {
-    color: #0550ae;
-  }
-
-  .highlight .sb {
-    color: #0550ae;
-  }
-
-  .highlight .bp {
-    color: #0550ae;
-  }
-
-  .highlight .ne {
-    color: #0550ae;
-  }
-
-  .highlight .nl {
-    color: #0550ae;
-  }
-
-  .highlight .py {
-    color: #0550ae;
-  }
-
-  .highlight .nv,
-  .highlight .vc,
-  .highlight .vg,
-  .highlight .vi,
-  .highlight .vm {
-    color: #0550ae;
-  }
-
-  .highlight .o,
-  .highlight .ow {
-    color: #0550ae;
-  }
-
-  .highlight .gh {
-    color: #0550ae;
-    font-weight: bold;
-  }
-
-  .highlight .gu {
-    color: #0550ae;
-    font-weight: bold;
-  }
-
-  .highlight .s,
-  .highlight .sa,
-  .highlight .sc,
-  .highlight .dl,
-  .highlight .sd,
-  .highlight .s2,
-  .highlight .se,
-  .highlight .sh,
-  .highlight .sx,
-  .highlight .s1,
+  .highlight .mx,
   .highlight .ss {
-    color: #0a3069;
-  }
-
-  .highlight .nd {
-    color: #8250df;
-  }
-
-  .highlight .nf,
-  .highlight .fm {
-    color: #8250df;
-  }
-
-  .highlight .err {
-    color: #f6f8fa;
-    background-color: #82071e;
-  }
-
-  .highlight .c,
-  .highlight .ch,
-  .highlight .cd,
-  .highlight .cm,
-  .highlight .cp,
-  .highlight .cpf,
-  .highlight .c1,
-  .highlight .cs {
-    color: #68717a;
-  }
-
-  .highlight .gl {
-    color: #68717a;
-  }
-
-  .highlight .gt {
-    color: #68717a;
-  }
-
-  .highlight .ni {
-    color: #24292f;
-  }
-
-  .highlight .si {
-    color: #24292f;
-  }
-
-  .highlight .ge {
-    color: #24292f;
-    font-style: italic;
-  }
-
-  .highlight .gs {
-    color: #24292f;
-    font-weight: bold;
+    color: #4caf50;
   }
 }
