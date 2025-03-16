@@ -14,3 +14,11 @@
 - type: linkedin
   icon: 'fab fa-linkedin'   # icons powered by <https://fontawesome.com/>
   url:  'https://www.linkedin.com/in/%EC%98%81%EC%88%98-%EC%9D%B4-b78498347/'
+
+- type: resume
+  icon: "fas fa-file-alt"    # 원하는 다른 아이콘으로 변경 가능
+  url: "https://www.rallit.com/hub/resumes/988543/%EC%9D%B4%EC%98%81%EC%88%98"
+
+- type: portfolio
+  icon: "fas fa-laptop-code" # 원하는 다른 아이콘으로 변경 가능
+  url: "https://comet-pram-809.notion.site/185365707b6580859ec5ec052f2f6730"
