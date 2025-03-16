@@ -1,0 +1,110 @@
+---
+layout: page
+# The Archives of posts.
+---
+
+{% include lang.html %}
+
+{% assign df_strftime_m = site.data.locales[lang].df.archives.strftime | default: '/ %m' %}
+{% assign df_dayjs_m = site.data.locales[lang].df.archives.dayjs | default: '/ MM' %}
+
+{%- comment -%}
+(1) 연도 목록 수집 (중복 없이)
+{%- endcomment -%}
+{% assign year_list = "" | split: "" %}
+{% for post in site.posts %}
+{% if post.date %}
+{% assign y = post.date | date: "%Y" %}
+{% unless year_list contains y %}
+{% assign year_list = year_list | push: y %}
+{% endunless %}
+{% endif %}
+{% endfor %}
+
+{%- comment -%}
+(2) 연도 목록 정렬 (내림차순)
+{%- endcomment -%}
+{% assign year_list = year_list | sort %}
+{% assign year_list = year_list | reverse %}
+
+<!-- 디버그: year_list 확인 -->
+<!-- <pre>year_list => {{ year_list | join: ', ' }}</pre> -->
+
+{%- comment -%}
+(3) 연도별 포스트 개수를 담을 배열 year_counts
+=> ["2025__11", "2024__38", ...] 식으로
+{%- endcomment -%}
+{% assign year_counts = "" | split: "" %}
+{% for y in year_list %}
+{% assign count = 0 %}
+{% for p in site.posts %}
+{% if p.date %}
+{% assign py = p.date | date: "%Y" %}
+{% if py == y %}
+{% assign count = count | plus: 1 %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% assign item = y | append: "__" | append: count %}
+{% assign year_counts = year_counts | push: item %}
+{% endfor %}
+
+
+<style>
+  .year-line {
+    width: 250px;      /* 가운데 정렬된 상자 폭 */
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around; /* 연도와 숫자를 좌우로 분산 */
+  }
+  .year-line span:last-child {
+    margin-left: 3rem; /* 연도와 숫자 사이 여백 */
+  }
+</style>
+
+<div id="archives" class="pl-xl-3">
+
+  {% assign last_year = "" %}
+  {% for post in site.posts %}
+  {% if post.date %}
+  {% assign cur_year = post.date | date: "%Y" %}
+
+  {% if cur_year != last_year %}
+  {% unless forloop.first %}</ul>{% endunless %}
+
+  {% assign matched_count = 0 %}
+  {% for item in year_counts %}
+  {% assign splitted = item | split: '__' %}
+  {% assign y_ = splitted[0] %}
+  {% assign c_ = splitted[1] %}
+  {% if y_ == cur_year %}
+  {% assign matched_count = c_ %}
+  {% endif %}
+  {% endfor %}
+
+  <!-- 연도와 숫자(오른쪽)를 가운데 정렬된 상자 안에 배치 -->
+  <time class="year lead d-block year-line">
+    <span>{{ cur_year }}</span>
+    <span>({{ matched_count }})</span>
+  </time>
+  {{ '<ul class="list-unstyled">' }}
+
+  {% assign last_year = cur_year %}
+  {% endif %}
+
+  <li>
+    {% assign ts = post.date | date: '%s' %}
+    <span class="date day" data-ts="{{ ts }}" data-df="DD">
+          {{ post.date | date: '%d' }}
+        </span>
+    <span class="date month small text-muted ms-1" data-ts="{{ ts }}" data-df="{{ df_dayjs_m }}">
+          {{ post.date | date: df_strftime_m }}
+        </span>
+    <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+  </li>
+
+  {% if forloop.last %}</ul>{% endif %}
+  {% endif %}
+  {% endfor %}
+
+</div>
