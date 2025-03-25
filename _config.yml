@@ -55,8 +55,10 @@ comments:
   # Global switch for the post-comment system. Keeping it empty means disabled.
   provider: giscus
   giscus:
-    repo: youngsu5582/blog
-
+    repo: "youngsu5582/blog"
+    repo_id: "R_kgDOOI2eig"
+    category: "Post"
+    category_id: "DIC_kwDOOI2eis4Cob3Y"
 pwa:
   enabled: false # The option for PWA feature (installable)
   cache:
