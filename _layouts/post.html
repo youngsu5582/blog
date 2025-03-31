@@ -125,11 +125,18 @@ script_includes:
   <br>
 
   <!-- categories -->
+  <!-- categories -->
   {% if page.categories.size > 0 %}
   <div class="post-meta mb-3">
     <i class="far fa-folder-open fa-fw me-1"></i>
+    {% assign collection_type = page.collection %}
+    {% if collection_type == "articles" %}
+    {% assign category_base = "/articles/categories/" %}
+    {% else %}
+    {% assign category_base = "/categories/" %}
+    {% endif %}
     {% for category in page.categories %}
-    <a href="{{ site.baseurl }}/categories/{{ category | slugify | url_encode }}/">{{ category }}</a>
+    <a href="{{ site.baseurl }}{{ category_base }}{{ category | slugify | url_encode }}/">{{ category }}</a>
     {%- unless forloop.last -%},{%- endunless -%}
     {% endfor %}
   </div>
@@ -139,9 +146,15 @@ script_includes:
   {% if page.tags.size > 0 %}
   <div class="post-tags">
     <i class="fa fa-tags fa-fw me-1"></i>
+    {% assign collection_type = page.collection %}
+    {% if collection_type == "articles" %}
+    {% assign tag_base = "/articles/tags/" %}
+    {% else %}
+    {% assign tag_base = "/tags/" %}
+    {% endif %}
     {% for tag in page.tags %}
     <a
-      href="{{ site.baseurl }}/tags/{{ tag | slugify | url_encode }}/"
+      href="{{ site.baseurl }}{{ tag_base }}{{ tag | slugify | url_encode }}/"
       class="post-tag no-text-decoration"
     >
       {{- tag -}}
