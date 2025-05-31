@@ -1,0 +1,35 @@
+name: 이슈 생성 시 브랜치·PR 자동 생성
+
+on:
+  issues:
+    types: [labeled]
+  # 2) 수동 트리거 (Actions UI에서 Run workflow 버튼 클릭)
+
+jobs:
+  create-branch-and-pr:
+    if: |
+      (github.event_name == 'issues' && github.event.label.name == 'draft')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        working-directory: ./
+        run: npm install
+
+      - name: Run create_branch_and_pr script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ toJson(github.event.issue.body) }}
+        run: node ./.github/scripts/create_branch_and_pr.js
