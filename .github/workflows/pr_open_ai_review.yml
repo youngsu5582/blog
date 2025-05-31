@@ -1,0 +1,33 @@
+name: PR 열릴 때 AI 리뷰 코멘트 달기
+
+on:
+  pull_request:
+    types: [opened, synchronize]   # PR 생성됐을 때, 또는 PR에 커밋·리뷰 업데이트 있을 때
+
+jobs:
+  ai-pr-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0   # 전체 히스토리 필요할 경우
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        working-directory: ./
+        run: npm install
+
+      - name: Run AI PR Review Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: node ./.github/scripts/ai_pr_review.js
