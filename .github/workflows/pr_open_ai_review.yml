@@ -1,18 +1,22 @@
 name: PR 열릴 때 AI 리뷰 코멘트 달기
 
 on:
-  pull_request_target:
-    types: [ opened, synchronize, labeled ]
+  pull_request:
+    types:
+      - labeled    # “라벨이 새로 달릴 때”만 트리거
 
 jobs:
   ai-pr-review:
-    # PR에 "review" 라벨이 포함되어 있을 때만 실행
-    if: contains(github.event.pull_request.labels.*.name, 'review')
+    # 1) 이벤트가 ‘labeled’일 것   (pull_request 이벤트의 action 필드)
+    # 2) 방금 추가된 라벨명이 ‘review’일 것 (github.event.label.name)
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'review' }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
+          # PR HEAD 커밋으로 체크아웃
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
@@ -21,8 +25,20 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: Print event context
+        run: |
+          echo "=== EVENT CONTEXT ==="
+          echo "Event Name: $GITHUB_EVENT_NAME"
+          echo "Action: ${{ github.event.action }}"
+          echo "Label just added: ${{ github.event.label.name }}"
+          echo "All labels on PR: ${{ toJson(github.event.pull_request.labels.*.name) }}"
+          echo "PR Number: ${{ github.event.pull_request.number }}"
+          echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
+          echo "BASE_REF: ${{ github.event.pull_request.base.ref }}"
+          echo "HEAD_REF: ${{ github.event.pull_request.head.ref }}"
+          echo "======================"
+
       - name: Install dependencies
-        working-directory: ./
         run: npm install
 
       - name: Run AI PR Review Script
