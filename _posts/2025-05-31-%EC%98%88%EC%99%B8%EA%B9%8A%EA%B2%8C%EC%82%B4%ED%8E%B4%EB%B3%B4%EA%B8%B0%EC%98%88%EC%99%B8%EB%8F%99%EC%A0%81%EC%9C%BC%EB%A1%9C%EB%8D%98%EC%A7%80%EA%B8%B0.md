@@ -1,0 +1,319 @@
+---
+title: "예외 깊게 살펴보기, 예외 동적으로 던지기"
+author: "이영수"
+date: 2025-05-31T11:33:07.625Z
+tags: ["예외처리", "코드품질", "자바", "개발방법론"]
+description: "예외를 동적으로 던지는 방법과 예외 처리 시 발생하는 성능 저하를 다루며, 코드 품질을 개선하는 방안을 제시합니다."
+image:
+  path: assets/img/thumbnail/2025-05-31-%EC%98%88%EC%99%B8%EA%B9%8A%EA%B2%8C%EC%82%B4%ED%8E%B4%EB%B3%B4%EA%B8%B0%EC%98%88%EC%99%B8%EB%8F%99%EC%A0%81%EC%9C%BC%EB%A1%9C%EB%8D%98%EC%A7%80%EA%B8%B0.png
+---
+## 📋 초안 제목
+예외 깊게 살펴보기, 예외 동적으로 던지기
+
+## 📝 초안 내용 (Markdown)
+이번에 코드를 작성하던 중 코드 리뷰에서 아쉬운 점을 리뷰 받았다.
+
+문제의 코드는
+
+```java
+// ...BackOfficeSaveDto  
+  
+public void validate() {  
+    try {  
+        option.validate();  
+    } catch (IllegalArgumentException e) {  
+        throw new BusinessException("백 오피스 저장 중 문제 발생: %s".formatted(e.getMessage()), e);  
+    }  
+}  
+  
+// ...ClientSaveDto  
+public void validate() {  
+    try {  
+        option.validate();  
+    } catch (IllegalArgumentException e) {  
+        throw new BusinessException("클라이언트 저장 중 문제 발생: %s".formatted(e.getMessage()), e);  
+    }  
+}  
+  
+// Option  
+public void validate() {  
+    if (model.isInactive()) {  
+		throw new IllegalArgumentException("모델이 비활성화 입니다. 모델 타입: %s".formatted(model.name()));
+    }
+}
+```
+
+이와 같았다. ( 물론, 각색 했다. )
+
+- 중복된 코드들이 발생한다. - `DRY ( Do not repeat yourself! )`
+- 예외를 잡아서 단순 변환만 해서 던진다.
+
+단순하게 생각해서 try-catch 로 관심사를 다르게 하려고 했는데 무겁고, 이쁘지 않은 코드인걸 깨달았다.
+
+> 해당 부분은 다소 애매할 수도 있다.
+> [코드 품질 개선 기법 1편: 한 번 엎지른 error는 다시 주워 담지 못한다](https://techblog.lycorp.co.jp/ko/techniques-for-improving-code-quality-1) 아티클에서 
+> `만약 호출자의 코드가 결정되지 않으면 복구 가능 여부를 판단할 수 없는 경우에는 일단 다루기 쉬운 방식으로 에러를 반환한 후 호출자 측에서 다른 에러로 변환하는 것도 고려해야 합니다.` 라는 내용이 있다.
+> 이 역시 코드 컨벤션 및 기준의 차이일 수 있다. 🙂
+
+예외를 왜 가볍게 사용하면 안되는지, 예외를 원하는 대로 던지는 방법에 대해 살펴보자.
+
+## 예외
+
+### 객체 생성 오버헤드
+
+`Throwable` 인터페이스 만들 때 JVM 힙에서 객체 메모리 할당
+
+- `detailMessage`, `cause`, `stackTrace` 등 여러 필드를 가짐 ( 특히, 스택 트레이스는 무겁다. )
+- 예외 객체는 거의 사용 후 바로 버려지는 경향이 있음 ( `short-lived` ) - GC 비용이 커짐
+
+### 스택 트레이스 수집 비용
+
+자바에서 예외는 추적이 용이하게 스택 트레이스를 활용한다.
+
+```java
+public Throwable(String message) {  
+    fillInStackTrace();  
+    detailMessage = message;  
+}
+```
+
+Throwable 클래스의 생성자에는 `fillInStackTrace()` 메소드가 있다.
+
+```java
+public synchronized Throwable fillInStackTrace() {  
+    if (stackTrace != null ||  
+        backtrace != null /* Out of protocol state */ ) {  
+        fillInStackTrace(0);  
+        stackTrace = UNASSIGNED_STACK;  
+    }  
+    return this;  
+}
+```
+
+> 이 부분에서 바로 채우지 않는다. - `private static final StackTraceElement[] UNASSIGNED_STACK = new StackTraceElement[0]`
+> Stream 과 비슷하게 필요할 때 ( `getStackeTrace()`, `printStackTrace` 등등 ) 채워서 보여준다.
+
+```java
+static StackTraceElement[] of(Object x, int depth) {  
+    StackTraceElement[] stackTrace = new StackTraceElement[depth];  
+    for (int i = 0; i < depth; i++) {  
+        stackTrace[i] = new StackTraceElement();  
+    }  
+  
+    // VM to fill in StackTraceElement  
+    initStackTraceElements(stackTrace, x, depth);  
+    return of(stackTrace);  
+}
+```
+
+VM 이
+`예외가 발생한 스레드 식별`, `프레임 포인터 스텝 추적`( 스레드의 호출 스택을 프레임 단위로 올라감 ), `라인 번호 조회` 등등
+
+보기만 해도 뭔가 많아 보이지 않는가?
+
+```
+at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+```
+
+( 이렇게 모든 요소들을 보여주는건 마법같이 일어나는게 아니다. 💣 )
+
+결국 예외가 스택에 하나 더 추가될 때마다 이런 작업이 발생한다.
+
+### 스택 트레이스로 인한 GC
+
+예외 객체 및 수집된 `StackTraceElement` 는 사실상 곧바로 참조가 끊겨 GC 대상이다.
+-> GC 회수가 늘어나며 애플리케이션 전체 응답성 저하
+
+`01:10:27.252 [http-nio-8080-exec-9] [INFO ] [c.m.i.a.t.c.Controller] - StackTrace 길이 : 234`
+Spring 로직에서
+
+```java
+public void validate() {  
+	option.validate();
+}
+```
+
+검증 부분에서 예외가 발생했다고 하면?
+``01:10:27.252 [http-nio-8080-exec-9] [INFO ] [c.m.i.a.t.c.Controller] - StackTrace 길이 : 234`
+Spring AOP 로 인해 어마어마한 스택 트레이스가 생겨난다.
+
+좀 더 들어가보자.
+`JOL(Java Object Layout)` 을 활용해서 직접적인 메모리 구조를 분석해보자.
+
+스택 트레이스 배열은 960 바이트를 가진다. ( 16 + 940 + 4(패딩) = 960 으로 추정 )
+
+`5c2129458        960 [Ljava.lang.StackTraceElement;     .stackTrace                    [(object), (object) ...]`
+
+`5c212c3c8         48 java.lang.StackTraceElement        .stackTrace[187]               (object)`
+
+간단하게 계산해봐도 960 + 48 `*` 234 = 12,192 이상의 바이트를 차지한다.
+
+> 예전 마리오가 4KB 로 돌아갔다고 하는데...
+> 우리는 예외 4개도 못 띄운다 ㅋㅋ
+
+```
+Deep size: 18536 bytes
+Retained objects count: 300
+```
+
+JOL 은 이렇게 정보를 제공해준다.
+
+물론 이미 발생한 하나의 예외에서 한 개 쯤 올라간다고 해도
+
+```
+Deep size: 18592 bytes
+Retained objects count: 301
+```
+
+56 바이트 정도로 드라마틱 하게 올라가지는 않는다.
+
+### 성능 저하 유발
+
+예외 발생 여부는 드문 분기로 처리되어, `정상 경로` 가 예측되어 파이프라인이 채워질 수 있는데
+예외 발생 시 예측이 틀리며 파이프라인이 플러시 되고 다시 채워져야 한다.
+-> 높은 사이클 지연 발생
+
+JIT 컴파일러가 예외 가능성이 있는 블록은 최적화 대상에서 제외할 수 있다.
+
+
+## 동적으로 던지기
+
+그러면 한 번이라도 더 불필요한 예외를 던지기 위해서 할 수 있는 방법들은 뭐가 있을까?
+
+### Flag, Status
+
+```java
+public void validate(boolean isBusiness){
+	if (isBusiness) {
+		throw new BusinessException("...");
+	} else {
+		throw new IllegalArgumentException("...");
+	}
+}
+```
+
+```java
+public void validate(ExceptionStatus status){
+	switch(status) {
+		case PRODUCTION -> ...
+		case DEVELOP -> ...
+		default -> ...
+	}
+}
+```
+
+`어떤 경우일때, 어떤 예외를 던진다.`, `이 규칙은 변할 가능성이 없다.` 와 같은 상황 일때는 이런 분기문이 더 명확한 코드가 작성될 수 있다.
+
+-> 하지만, 대부분의 코드들은 이런 변화를 예상하지 못하고, 장담할 수 없을 것이다.
+
+### Reflection
+
+언제든 바뀔수 있게 플래그 없이 외부에서 클래스를 넘겨주는 것도 방법이다.
+
+```java
+public void validate(){
+	option.validateModelType(IllegalArgumentException.class);
+}
+
+default void validateModelType(Class<? extends RuntimeException> clazz) {
+	if (getModelType().isInactive()) {
+		throw createExceptionInstance(clazz, "비활성화된 모델 타입입니다. (modelType: %s)".formatted(getModelType()));`
+	}
+}
+```
+
+```java
+@SuppressWarnings("unchecked")
+static <E extends RuntimeException> E createExceptionInstance(
+		Class<? extends Exception> exceptionType, String message) {
+	try {
+		return (E) exceptionType.getConstructor(String.class).newInstance(message);
+	} catch (ReflectiveOperationException e) {
+		throw new IllegalStateException(
+				"예외 생성에 실패했습니다: " + exceptionType.getName(), e);
+	}
+}
+```
+
+사용하는 측에서 클래스를 넘겨주고, 내부에서 클래스 정보를 기반으로 생성해준다.
+매번 리플렉션을 사용하기 싫다면
+
+```java
+private static final Map<  
+        Class<? extends RuntimeException>,  
+        Function<String, ? extends RuntimeException>  
+        > EXCEPTION_FACTORIES = Map.of(IllegalArgumentException.class, IllegalArgumentException::new);
+```
+
+MAP 에 미리 넣어두는 것도 하나의 방법
+
+### 함수형
+
+지금의 코드는 다소 아쉬운 점이 많이 있다.
+
+`throw createExceptionInstance(clazz, "비활성화된 모델 타입입니다. (modelType: %s)".formatted(getModelType()));`
+
+- 우선 메소드를 호출해야만 한다. 특히, static 메소드를 호출한다.
+- 클래스 정보를 매개변수로 넘겨준다.
+- 리플렉션을 활용해야 하거나 MAP 에 미리 넣어놓거나 넣는등 작업을 해야한다.
+
+이 3가지의 문제점을 함수형으로 우아하게 해결해버릴 수 있다. 😎
+
+```java
+/**  
+ * 문자열을 받아서 예외를 생성하는 함수형 인터페이스  
+ * <p>  
+ * 생성되는 예외를 외부에서 결정하고 싶을때 사용합니다.  
+ * ( 똑같은 validation 로직을 사용하더라도, CustomException & IllegalArgumentException 다르게 throw )  
+ * * @param <E> Exception 을 상속받는 타입  
+ */
+@FunctionalInterface  
+public interface ExceptionCreator<E extends Exception> {  
+  
+    /**  
+     * 메시지를 사용하여 예외를 생성합니다.  
+     * <p>  
+     * EX) imageToImageOption.validate(IllegalArgumentException::new);  
+     *     * @param message 예외에 사용될 메시지  
+     * @return 생성된 예외  
+     */  
+    E create(String message);  
+}
+```
+
+문자열을 받아서 함수형을 생성하는 함수형 인터페이스를 만들면
+
+```java
+public void validate(ExceptionCreator<? extends RuntimeException> exceptionCreator) {  
+    throw exceptionCreator.create("열거형에 존재하지 않는 외부 요청으로 처리 불가능합니다. 외부 요청 옵션: %s".formatted(externalApiOption));  
+}
+```
+
+메소드를 호출하지 않고, 직접 자신이 생성 + 클래스 정보 역시도 알 필요가 없다.
+
+```java
+public void validate() {  
+    option.validate(InvalidInputException::new);  
+}
+
+public void validate() {  
+    option.validate();  
+}
+```
+
+근데, 결국 어느 부분에선
+`ExceptionCreator<? extends RuntimeException> exceptionCreator` 매개변수를 복잡하게 넘겨야 한다.
+
+## 결론
+
+빠르게 코드를 작성해야 한다면 단순히 try-catch 를 통해 변환을, 조금 더 깔끔한 코드를 고려한다면 자신이 적절하게 판단을 해서 선택하면 된다.
+적절히 팀원들이 이해할 수 있는, 그리고 만족할 수 있는 컨벤션을 만들어나가자.
