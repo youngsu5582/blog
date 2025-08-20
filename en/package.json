@@ -1,0 +1,16 @@
+{
+  "name": "blog-actions",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GitHub Actions 스크립트용 의존성 모음",
+  "scripts": {
+    "test": "echo \"No tests defined\" && exit 0"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@octokit/rest": "^19.0.7",
+    "openai": "^4.6.0",
+    "slugify": "^1.6.6"
+  }
+}

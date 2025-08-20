@@ -1,0 +1,4 @@
+python-dotenv
+openai
+python-frontmatter
+requests
