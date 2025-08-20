@@ -1,0 +1,46 @@
+<style>
+  .language-switcher {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .language-switcher li a {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f0f0f0;
+  }
+  .language-switcher li a:hover {
+    background-color: #e0e0e0;
+  }
+  .language-switcher li .active-lang { /* 현재 활성화된 언어 텍스트 스타일 */
+    padding: 5px 10px;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    color: white;
+    background-color: #007bff;
+    cursor: default;
+  }
+</style>
+
+<ul class="language-switcher">
+  {% if site.active_lang == 'en' %}
+    <li>
+      <a href="{{ site.url }}">{{ site.data.ko.l10n.lang_name }}</a>
+    </li>
+    <li>
+      <span class="active-lang">{{ site.data.en.l10n.lang_name }}</span>
+    </li>
+  {% else %}
+    <li>
+      <span class="active-lang">{{ site.data.ko.l10n.lang_name }}</span>
+    </li>
+    <li>
+      <a href="{{ site.url }}/en/">{{ site.data.en.l10n.lang_name }}</a>
+    </li>
+  {% endif %}
+</ul>
