@@ -137,15 +137,12 @@ compress_html:
     envs: [development]
 
 exclude:
-  - "*.gem"
-  - "*.gemspec"
   - docs
   - tools
   - README.md
   - LICENSE
   - purgecss.js
   - rollup.config.js
-  - "package*.json"
 
 jekyll-archives:
   enabled: [categories, tags]
@@ -160,3 +157,22 @@ jekyll-archives:
     - articles
 
 future: true
+
+plugins:
+  - jekyll-polyglot
+
+# Polyglot Configuration
+languages: ["ko", "en"]
+default_lang: "ko"
+exclude_from_localization:
+  - "assets"
+  - "categories"
+  - "tags"
+  - ".devcontainer"
+  - ".github"
+  - ".idea"
+  - ".venv"
+  - ".vscode"
+  - "tools"
+  - "utils"
+parallel_localization: false
