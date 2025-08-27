@@ -1,0 +1,79 @@
+
+name: Translate Post on Label (OpenAI)
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'translate' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Find Markdown file in PR
+        id: find_file
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const path = require('path');
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const mdFile = files.find(f => f.filename.startsWith('_posts/') && f.filename.endsWith('.md') && f.status === 'added');
+            if (!mdFile) {
+              core.setFailed('No new markdown file found in _posts directory.');
+              return;
+            }
+            const basename = path.basename(mdFile.filename);
+            const match = basename.match(/^\d{4}-\d{2}-\d{2}-(.*)\.md$/);
+            const slug = match ? match[1] : 'unknown-post';
+
+            core.setOutput('file_path', mdFile.filename);
+            core.setOutput('slug', slug);
+            console.log(`Found file: ${mdFile.filename}, slug: ${slug}`);
+            return `Found file: ${mdFile.filename}, slug: ${slug}`;
+
+      - name: Translate Post
+        run: node .github/scripts/translate_post_openai.js ${{ steps.find_file.outputs.file_path }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: |
+            docs: translate post "${{ steps.find_file.outputs.slug }}" to English
+
+            translate post by open api
+          branch: ${{ github.head_ref }}
+
+      - name: Post comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ OpenAI 번역이 완료되었습니다. `ko` 및 `en` 파일이 생성되었고 원본 파일은 삭제되었습니다.'
+            });
