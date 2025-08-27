@@ -1,10 +1,10 @@
 /**
  * 파일 위치: .github/scripts/create_branch_and_pr.js
  * 역할: 이슈 번호/제목/본문을 받아서
- *   1) 브랜치 생성(예: issue-123-spring-webflux-vs-spring-mvc)
- *   2) _posts/아래에 Markdown 파일 생성(날짜-제목.md)
+ *   1) 브랜치 생성(예: issue-123)
+ *   2) _posts/아래에 Markdown 파일 생성(날짜-영어-slug.md)
  *   3) Frontmatter 자동 삽입: title, author, date, tags, description, image.path
- *   4) OpenAI에 본문을 보내 tags/description 생성, v1/images/generations로 썸네일 URL 얻기 → 이미지 다운로드
+ *   4) OpenAI에 본문을 보내 tags/description/slug(영어) 생성, v1/images/generations로 썸네일 URL 얻기 → 이미지 다운로드
  *   5) Markdown 파일 및 썸네일 이미지를 함께 Git 커밋 → 푸시 → PR 생성
  */
 
@@ -13,23 +13,11 @@ import path from 'path'
 import https from 'https'
 import {Octokit} from '@octokit/rest'
 import * as core from '@actions/core'
-import slugify from 'slugify'
 import OpenAI from 'openai'
+import matter from 'gray-matter'
 
 // 이미지 생성 시 사용할 크기 옵션
 const DALL_E_SIZE = '1024x1024'
-
-// 한글 슬러그
-function slugifyWithHyphens(title) {
-  return title
-  .trim()
-  // 한글(가-힣), 영문(a-zA-Z), 숫자(0-9) 외의 모든 문자를 하이픈으로 바꾼다
-  .replace(/[^가-힣a-zA-Z0-9]+/g, '-')
-  // 연속된 하이픈(--, --- 등)을 하나로 줄인다
-  .replace(/-+/g, '-')
-  // 문자열이 하이픈으로 시작하거나 끝나면 제거
-  .replace(/^-+|-+$/g, '')
-}
 
 /**
  * 환경 변수를 읽고, 누락됐을 때는 프로세스를 종료합니다.
@@ -38,7 +26,7 @@ function getEnvVars() {
   const repoFullName = process.env.REPOSITORY       // ex) "user/repo"
   const issueNumber = process.env.ISSUE_NUMBER     // ex) "123"
   const rawTitle = process.env.ISSUE_TITLE      // ex) "[블로그 초안] Spring WebFlux vs Spring MVC"
-  const issueBodyRaw = process.env.ISSUE_BODY       // JSON 문자열: "\"# 제목\\n본문\""
+  const issueBodyRaw = process.env.ISSUE_BODY       // JSON 문자열: "\"# 제목\n본문\""
   const token = process.env.GITHUB_TOKEN
   const openaiApiKey = process.env.OPENAI_API_KEY
 
@@ -82,30 +70,13 @@ function initClients(token, openaiApiKey) {
 
 /**
  * issueTitle에서 대괄호 [] 부분을 제거한 후
- * Frontmatter용 title, slug, cleanedTitle을 생성해 반환합니다.
- * strict:false 옵션을 사용해 한글도 그대로 유지되도록 합니다.
+ * Frontmatter용 title과 OpenAI 프롬프트용 cleanedTitle을 생성해 반환합니다.
  */
 function generateSlugAndTitle(issueTitle) {
-  const cleanedTitle = issueTitle.replace(/^\[.*?\]\s*/, '').trim()
+  const cleanedTitle = issueTitle.replace(/^\\\\[.*?\\\\]\\s*/, '').trim()
   const title = cleanedTitle.replace(/"/g, '\\"')
-  let slug = decodeURIComponent(slugifyWithHyphens(cleanedTitle))
-
-  // slug가 빈 문자열이라면, fallback으로 로마자 변환 후 다시 slugify
-  if (!slug) {
-    try {
-      // `transliteration` 라이브러리가 설치되어 있다고 가정
-      // import { transliterate } from 'transliteration'
-      // const romanized = transliterate(cleanedTitle)
-      const romanized = cleanedTitle // transliteration이 없다면 그대로 두고
-      slug = slugify(romanized, {lower: true, strict: true})
-    } catch {
-      slug = `${Date.now()}` // 그래도 안되면 타임스탬프 사용
-    }
-  }
-
   core.info(`제목 (Frontmatter용): ${title}`)
-  core.info(`슬러그 (파일명용): ${slug}`)
-  return {title, slug}
+  return {title, cleanedTitle}
 }
 
 /**
@@ -164,22 +135,25 @@ async function createBranch(octokit, owner, repo, defaultBranch, branchName) {
 }
 
 /**
- * OpenAI ChatCompletion API를 통해 tags, description을 생성해 반환합니다.
+ * OpenAI ChatCompletion API를 통해 tags, description, slug를 생성해 반환합니다.
  */
-async function generateMetadata(openai, issueBody) {
+async function generateMetadata(openai, issueBody, cleanedTitle) {
   const tagDescSystemMsg = `
 You are a helpful assistant that extracts metadata from a technical blog post draft.
-Given the full Markdown content of the post (below), please respond in JSON format exactly with two fields:
+Given the full Markdown content and the title of the post, please respond in JSON format exactly with three fields:
 1. "tags": an array of 2 to 4 concise tags (in Korean), representing key topics.
 2. "description": a short summary of the post in Korean, 50~100자 이내.
+3. "slug": a URL-friendly slug for the title. It should be in lowercase English, with words separated by hyphens.
+
+Title: "${cleanedTitle}"
 
 Respond only with valid JSON. Do not include any extra text.
 `
   const tagDescUserMsg = `
 ### 블로그 초안 Markdown 내용 (본문만) ###
-\`\`\`
+\`\
 ${issueBody.trim()}
-\`\`\`
+\`\
 `
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -188,24 +162,30 @@ ${issueBody.trim()}
       {role: "user", content: tagDescUserMsg}
     ],
     temperature: 0.3,
-    max_tokens: 300
+    max_tokens: 350
   })
 
   const content = response.choices[0].message.content.trim()
-  let tags = []
-  let description = ""
+  let tags = [], description = "", slug = ""
   try {
     const metadata = JSON.parse(content)
     tags = Array.isArray(metadata.tags) ? metadata.tags : []
     description = typeof metadata.description === "string"
       ? metadata.description : ""
+    slug = typeof metadata.slug === 'string' ? metadata.slug.trim() : ''
+
+    if (!slug) {
+      throw new Error("OpenAI did not return a valid slug.")
+    }
+
     core.info(`✅ OpenAI 태그 생성: ${JSON.stringify(tags)}`)
     core.info(`✅ OpenAI 설명 생성: ${description}`)
+    core.info(`✅ OpenAI 슬러그 생성: ${slug}`)
   } catch (parseErr) {
-    core.warning("🔶 OpenAI로부터 받은 태그/설명 JSON 파싱 실패")
+    core.warning("🔶 OpenAI로부터 받은 메타데이터 JSON 파싱 실패")
     throw parseErr
   }
-  return {tags, description}
+  return {tags, description, slug}
 }
 
 /**
@@ -322,27 +302,6 @@ function downloadImage(url, filePath) {
 }
 
 /**
- * Frontmatter만 생성해 반환합니다.
- */
-function composeFrontmatter(cleanedTitle, tags, description, imagePath, now) {
-  const isoDate = now.toISOString()
-  const lines = [
-    '---',
-    `title: "${cleanedTitle.replace(/"/g, '\\"')}"`,
-    `author: "이영수"`,
-    `date: ${isoDate}`,
-    `tags: [${tags.map(tag => `"${tag.replace(/"/g, '\\"')}"`).join(', ')}]`,
-    `description: "${description.replace(/"/g, '\\"')}"`,
-    'image:',
-    `  path: ${imagePath}`,
-    '---',
-    ''
-  ]
-  core.info('✅ Frontmatter 작성 완료')
-  return lines.join('\n')
-}
-
-/**
  * GitHub API를 통해 Markdown과 Image를 Blob으로 만들고,
  * Tree에 추가하여 Commit → 브랜치 업데이트 → PR 생성합니다.
  */
@@ -422,7 +381,7 @@ async function commitAndCreatePR(octokit, owner, repo, baseCommitSha,
 
   // 7) PR 생성
   const prTitle = `[게시글 초안] ${title}`
-  const prBody = `자동 생성된 PR입니다. 게시글 초안 파일(\`${mdFilePath}\`)을 확인해주세요.`
+  const prBody = `자동 생성된 PR입니다. 게시글 초안 파일(\\\`${mdFilePath}\\\`)을 확인해주세요.`
   await octokit.pulls.create({
     owner,
     repo,
@@ -454,37 +413,49 @@ async function run() {
     // 3) 기본 브랜치 조회
     const defaultBranch = await fetchDefaultBranch(octokit, owner, repo)
 
-    // 4) 브랜치명, cleanedTitle, slug 생성
-    const {title, slug} = generateSlugAndTitle(issueTitle)
+    // 4) 브랜치명, cleanedTitle 생성
+    const {title, cleanedTitle} = generateSlugAndTitle(issueTitle)
     const {now, datePrefix} = getDatePrefix()
     const branchName = `issue-${issueNumber}`
-    const mdFileName = `${datePrefix}-${slug}.md`
-    const postsDir = path.posix.join(process.cwd(), '_posts')
-    const mdFilePath = path.posix.join('_posts', mdFileName)
 
     // 5) 새 브랜치 생성 (이미 존재해도 무시)
     const baseCommitSha = await createBranch(octokit, owner, repo,
       defaultBranch, branchName)
 
     // 6) postsDir가 없으면 생성
+    const postsDir = path.posix.join(process.cwd(), '_posts')
     if (!fs.existsSync(postsDir)) {
       fs.mkdirSync(postsDir, {recursive: true})
       core.info(`✅ _posts 디렉토리 생성: ${postsDir}`)
     }
 
-    // 7) tags, description 생성
-    const {tags, description} = await generateMetadata(openai, issueBodyTrimmed)
+    // 7) tags, description, slug 생성
+    const {tags, description, slug} = await generateMetadata(openai,
+      issueBodyTrimmed, cleanedTitle)
+    const mdFileName = `${datePrefix}-${slug}.md`
+    const mdFilePath = path.posix.join('_posts', mdFileName)
 
     // 8) 썸네일 생성 및 다운로드
     const imagePathForFrontmatter = await generateAndDownloadImage(openaiApiKey,
-      title, datePrefix, slug)
+      cleanedTitle, datePrefix, slug)
 
-    // 9) Frontmatter 작성
-    const frontmatter = composeFrontmatter(title, tags, description,
-      imagePathForFrontmatter, now)
+    // 9) Frontmatter 데이터 객체 생성
+    const frontmatterData = {
+      title: title,
+      author: "이영수",
+      date: now,
+      tags: tags,
+      description: description,
+      image: {
+        path: imagePathForFrontmatter
+      },
+      page_id: slug
+    };
+    core.info('✅ Frontmatter 데이터 생성 완료');
 
-    // 10) fullMarkdown 구성
-    const fullMarkdown = frontmatter + issueBodyTrimmed + '\n'
+    // 10) gray-matter를 사용해 fullMarkdown 구성
+    const fullMarkdown = matter.stringify(issueBodyTrimmed, frontmatterData);
+    core.info('✅ gray-matter로 Frontmatter와 본문 결합 완료');
 
     // 11) Commit & PR 생성
     await commitAndCreatePR(octokit, owner, repo, baseCommitSha, branchName,
