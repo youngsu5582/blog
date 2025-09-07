@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="pageTitle">비개발 활동 기록</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap">
+    <link rel="stylesheet" href="/assets/css/activities.css">
+</head>
+<body>
+    <header>
+        <a href="/en/" class="back-to-blog" data-translate-key="backToBlog">블로그로 돌아가기</a>
+        <h1 data-translate-key="headerTitle">나의 비개발 활동 타임라인</h1>
+        <div class="language-switcher">
+            <button id="lang-ko" class="lang-btn" data-lang="ko">한국어</button>
+            <button id="lang-en" class="lang-btn" data-lang="en">English</button>
+        </div>
+    </header>
+
+    <div class="map-container">
+        <div id="mapid"></div>
+    </div>
+
+    <div class="timeline-container">
+        <!-- Activities will be dynamically loaded here -->
+        
+
+    </div>
+
+    <footer>
+        <p data-translate-key="footerText">&copy; 2025 My Life Timeline</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="/assets/js/activities.js"></script>
+</body>
+</html>
