@@ -1,3 +1,4 @@
+lang: ko
 ---
 title: ''
 author: 이영수
