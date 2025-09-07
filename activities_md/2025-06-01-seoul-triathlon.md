@@ -1,0 +1,27 @@
+---
+date: "2025-06-01 12:40:00 +0900"
+images:
+  - /assets/img/activities/2025/06/triathlon-1.jpeg
+  - /assets/img/activities/2025/06/triathlon-2.png
+  - /assets/img/activities/2025/06/triathlon-3.png
+title:
+  ko: "서울 쉬엄쉬엄 한강 3종 축제"
+  en: "MY PACE Hangang Triathlon Festival"
+description:
+  ko: "서울시가 주최하는 쉬엄쉬엄 한강 3종 축제"
+  en: The 'MY PACE Hangang Triathlon Festival' hosted by the Seoul Metropolitan Government."
+latitude: 37.51974
+longitude: 126.99561
+---
+
+### ko ###
+
+러닝 10KM, 자전거 20KM, 실내 수영 300m
+내년에는 한강 수영 1km 를 참여할 예정
+
+---
+
+### en ###
+
+Running 10KM, Cycling 20KM, Indoor Swimming 300m.
+Next year, I plan to participate in the 1km Han River swimming event.

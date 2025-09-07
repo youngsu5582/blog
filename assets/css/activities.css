@@ -1,0 +1,543 @@
+html, body {
+    height: 100%; /* Ensure full height for sticky positioning */
+}
+
+body {
+    font-family: 'Open Sans', 'Noto Sans KR', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa; /* Lighter background */
+    background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E"); /* Subtle pattern */
+    color: #343a40; /* Darker text for better contrast */
+    line-height: 1.6;
+}
+
+header {
+    background-color: #2c3e50; /* Dark blue */
+    color: #fff;
+    padding: 2rem 0; /* More padding */
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Stronger shadow */
+    position: relative; /* For positioning the language switcher */
+}
+
+header h1 {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3rem; /* Larger font size */
+    font-weight: 700;
+}
+
+.map-container {
+    /* Removed sticky positioning */
+    background-color: #e0e0e0; /* Background for map container */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Add shadow to map container */
+}
+
+#mapid {
+    width: 100%;
+    height: 500px; /* Taller map */
+    border-bottom: 8px solid #3498db; /* Thicker border */
+}
+
+.timeline-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 80px auto; /* More margin */
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    width: 6px; /* Thicker line */
+    background: linear-gradient(to bottom, #3498db, #2ecc71); /* Gradient line */
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px; /* Adjust for thicker line */
+    border-radius: 3px;
+}
+
+
+
+.timeline-item {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+    box-sizing: border-box;
+    margin-bottom: 40px; /* Space between items */
+}
+
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    width: 30px; /* Larger dot */
+    height: 30px;
+    background-color: #fff;
+    border: 5px solid #3498db; /* Thicker border */
+    top: 20px; /* Adjust position */
+    border-radius: 50%;
+    z-index: 1;
+    box-shadow: 0 0 0 3px #f8f9fa; /* Outer glow */
+}
+
+.timeline-item.left {
+    left: 0;
+    padding-right: 90px; /* Space for dot and line */
+}
+
+.timeline-item.right {
+    left: 50%;
+    padding-left: 90px; /* Space for dot and line */
+}
+
+.timeline-item.left::after {
+    right: -19px; /* Position dot on the right side of left item */
+}
+
+.timeline-item.right::after {
+    left: -19px; /* Position dot on the left side of right item */
+}
+
+.timeline-item.left::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 27px; /* Adjust position */
+    width: 0;
+    z-index: 1;
+    right: 30px;
+    border: medium solid white;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent #ffffff; /* White for card background */
+}
+
+.timeline-item.right::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 27px; /* Adjust position */
+    width: 0;
+    z-index: 1;
+    left: 30px;
+    border: medium solid white;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent #ffffff transparent transparent; /* White for card background */
+}
+
+.timeline-content {
+    padding: 25px 35px; /* More padding */
+    background-color: #ffffff; /* Pure white card background */
+    position: relative;
+    border-radius: 10px; /* More rounded corners */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Stronger, softer shadow */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Reduced gap for initial view */
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    cursor: pointer; /* Indicate clickable */
+    min-height: 150px; /* Ensure minimum height for initial view */
+    justify-content: flex-start; /* Align content to start */
+    align-items: flex-start; /* Align content to start */
+}
+
+.timeline-content:hover {
+    transform: translateY(-8px); /* More pronounced lift */
+    box-shadow: 0 12px 25px rgba(0,0,0,0.2); /* Stronger shadow on hover */
+}
+
+.timeline-image-wrapper {
+    width: 100%;
+    height: 250px; /* Taller image */
+    overflow: hidden;
+    border-radius: 8px; /* Rounded corners for image */
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for image wrapper */
+    /* Image is visible by default */
+    transition: transform 0.4s ease-in-out;
+}
+
+.timeline-content:hover .timeline-image-wrapper .timeline-image {
+    transform: scale(1.08); /* Subtle zoom on hover */
+}
+
+.timeline-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease-in-out;
+}
+
+.timeline-info-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(44, 62, 80, 0.9); /* Darker, more opaque overlay */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0; /* Hidden by default */
+    visibility: hidden; /* Hidden by default */
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    z-index: 2; /* Ensure it's above image but below arrows */
+}
+
+.timeline-content:hover .timeline-info-overlay {
+    opacity: 1; /* Show on hover */
+    visibility: visible; /* Show on hover */
+}
+
+.timeline-info-overlay h3 {
+    margin: 0 0 10px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem; /* Larger font */
+    font-weight: 600;
+}
+
+.timeline-info-overlay p {
+    margin: 0;
+    font-size: 1.1rem; /* Larger font */
+}
+
+.timeline-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem; /* Larger font */
+    margin-bottom: 5px; /* Adjusted margin */
+    color: #2c3e50; /* Dark blue */
+    font-weight: 700;
+    display: block; /* Always visible */
+}
+
+.timeline-date {
+    font-size: 0.95rem; /* Slightly larger */
+    color: #7f8c8d;
+    margin-bottom: 15px; /* Space before description/image */
+    display: block; /* Always visible */
+}
+
+.timeline-description {
+    font-size: 1.1rem; /* Larger font */
+    color: #555;
+    /* Description is visible by default */
+    margin-top: 15px; /* Space after image */
+}
+
+/* Image Gallery Navigation Arrows */
+.image-nav-arrows {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    z-index: 3; /* Above overlay */
+    pointer-events: none; /* Allow clicks to pass through to image */
+}
+
+.image-nav-arrows .arrow {
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0 10px;
+    pointer-events: all; /* Re-enable clicks for arrows */
+    transition: color 0.2s ease;
+}
+
+.image-nav-arrows .arrow:hover {
+    color: #fff;
+}
+
+/* Map Marker Highlight */
+.leaflet-marker-highlight {
+    filter: hue-rotate(180deg) brightness(1.5); /* Example highlight effect */
+    /* You might need to customize marker icons for better highlight */
+}
+
+.timeline-item-highlight {
+    box-shadow: 0 0 0 4px #3498db; /* Blue border highlight */
+    transform: scale(1.02); /* Slightly larger */
+}
+
+footer {
+    text-align: center;
+    padding: 40px; /* More padding */
+    background-color: #2c3e50; /* Dark blue */
+    color: #fff;
+    margin-top: 80px; /* More margin */
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.15); /* Stronger shadow */
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+footer p {
+    margin: 0;
+}
+
+/* Responsive layout */
+@media screen and (max-width: 768px) {
+    header {
+        padding-top: 4rem; /* Add padding to avoid overlap */
+    }
+    .language-switcher {
+        top: 15px;
+        right: 15px;
+        gap: 5px;
+    }
+    .lang-btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    header h1 {
+        font-size: 2.2rem;
+    }
+
+    #mapid {
+        height: 350px;
+    }
+
+    .timeline-container {
+        width: 95%;
+        margin: 40px auto;
+    }
+
+    .timeline-container::before {
+        left: 20px;
+    }
+
+    .timeline-item {
+        width: 100%;
+        padding-left: 60px;
+        padding-right: 20px;
+    }
+
+    .timeline-item.left::before,
+    .timeline-item.right::before {
+        border-width: 10px 10px 10px 0;
+        border-color: transparent #ffffff transparent transparent;
+        left: 50px;
+    }
+
+    .timeline-item.left::after,
+    .timeline-item.right::after {
+        left: 13px;
+        top: 20px;
+    }
+
+    .timeline-item.right {
+        left: 0%;
+    }
+
+    .timeline-content {
+        padding: 20px 25px;
+        gap: 15px;
+    }
+
+    .timeline-image-wrapper {
+        height: 200px;
+    }
+
+    .timeline-info-overlay h3 {
+        font-size: 1.5rem;
+    }
+
+    .timeline-info-overlay p {
+        font-size: 1rem;
+    }
+
+    .timeline-title {
+        font-size: 1.5rem;
+    }
+
+    .timeline-description {
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    #mapid {
+        height: 300px;
+    }
+
+    .timeline-item {
+        padding-left: 50px;
+    }
+
+    .timeline-item.left::before,
+    .timeline-item.right::before {
+        left: 40px;
+    }
+
+    .timeline-item.left::after,
+    .timeline-item.right::after {
+        left: 8px;
+    }
+
+    .timeline-content {
+        padding: 15px 20px;
+    }
+
+    .timeline-image-wrapper {
+        height: 180px;
+    }
+
+    .timeline-info-overlay h3 {
+        font-size: 1.3rem;
+    }
+
+    .timeline-info-overlay p {
+        font-size: 0.9rem;
+    }
+
+    .timeline-title {
+        font-size: 1.3rem;
+    }
+
+    .timeline-description {
+        font-size: 0.9rem;
+    }
+}
+/* Image Gallery Navigation Dots */
+.image-gallery-nav {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+}
+
+.image-gallery-nav .dot {
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.image-gallery-nav .dot.active {
+    background-color: #fff;
+}
+
+/* Toggle Button for Full Content */
+.toggle-content-btn {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+    align-self: flex-start; /* Align to start of flex container */
+}
+
+.toggle-content-btn:hover {
+    background-color: #2980b9;
+}
+
+.toggle-content-btn .arrow {
+    display: inline-block;
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+/* Style for full content when expanded */
+.full-content {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+.full-content h1, .full_content h2, .full_content h3, .full_content h4, .full_content h5, .full_content h6 {
+    color: #2c3e50;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.full-content p {
+    margin-bottom: 1em;
+}
+
+.full-content ul, .full_content ol {
+    margin-left: 20px;
+    margin-bottom: 1em;
+}
+
+.full_content li {
+    margin-bottom: 0.5em;
+}
+
+/* Language Switcher Styles */
+.language-switcher {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    display: flex;
+    gap: 10px;
+}
+
+.lang-btn {
+    background-color: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.lang-btn:hover, .lang-btn.active {
+    background-color: #fff;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+/* Back to Blog Link */
+.back-to-blog {
+    position: absolute;
+    top: 28px;
+    left: 30px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+    border: 1px solid #fff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.back-to-blog:hover {
+    background-color: #fff;
+    color: #2c3e50;
+}
+
+@media screen and (max-width: 768px) {
+    .back-to-blog {
+        top: 15px;
+        left: 15px;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+}
