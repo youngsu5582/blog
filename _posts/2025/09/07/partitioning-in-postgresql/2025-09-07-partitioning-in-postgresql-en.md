@@ -1,7 +1,7 @@
-lang: en
 ---
-title: ''
-author: Lee Youngsoo
+title: 'Exploring Partitioning in PostgreSQL'
+lang: en
+author: Lee Youngsu
 date: 2025-09-07T13:45:38.434Z
 tags:
   - PostgreSQL
@@ -9,14 +9,10 @@ tags:
   - Database
   - Performance Optimization
 description: This post discusses performance optimization techniques using RANGE partitioning in PostgreSQL. It provides tips and examples to enhance data retrieval efficiency.
+permalink: /posts/partitioning-in-postgresql/
 image:
   path: assets/img/thumbnail/2025-09-07-partitioning-in-postgresql.png
-page_id: partitioning-in-postgresql
 ---
-## 📋 Draft Title
-Exploring Partitioning in PostgreSQL
-
-## 📝 Draft Content (Markdown)
 > This content only covers RANGE partitioning.
 
 The simplest way to optimize performance in a database is indexing. Most RDBMS use B-Tree due to its structure, allowing data to be read with a time complexity of O(logN).

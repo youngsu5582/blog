@@ -1,6 +1,6 @@
-lang: ko
 ---
-title: ''
+title: '파티셔닝 톺아보기 in PostgreSQL'
+lang: ko
 author: 이영수
 date: 2025-09-07T13:45:38.434Z
 tags:
@@ -11,12 +11,8 @@ tags:
 description: PostgreSQL에서 RANGE 파티셔닝을 통한 성능 최적화 방법을 다룹니다. 데이터 조회 효율성을 높이는 팁과 예제를 제공합니다.
 image:
   path: assets/img/thumbnail/2025-09-07-partitioning-in-postgresql.png
-page_id: partitioning-in-postgresql
+permalink: /posts/partitioning-in-postgresql/
 ---
-## 📋 초안 제목
-파티셔닝 톺아보기 in PostgreSQL
-
-## 📝 초안 내용 (Markdown)
 > 해당 내용은 RANGE 파티셔닝에 대해서만 다룹니다.
 
 DB 에서 성능 최적화의 가장 간단한 방식은 인덱스 일 것이다.
