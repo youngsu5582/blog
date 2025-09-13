@@ -1,4 +1,5 @@
 ---
+lang: ko
 title: RabbitMQ VS Kafka
 author: 이영수
 date: 2025-09-13T12:45:20.889Z
