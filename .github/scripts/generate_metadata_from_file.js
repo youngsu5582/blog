@@ -184,10 +184,8 @@ async function run() {
     // 3. 마크다운 파일 업데이트
     frontmatter.tags = tags
     frontmatter.description = description
-    // page_id가 있는 경우, 생성된 slug로 업데이트
-    if (frontmatter.page_id) {
-        frontmatter.page_id = slug
-    }
+    frontmatter.page_id = slug // slug는 파일명에 사용되므로 page_id로 유지
+    frontmatter.permalink = `/posts/${slug}/` // permalink 필드 추가
 
     const newFileContent = matter.stringify(body, frontmatter)
     fs.writeFileSync(fullPath, newFileContent)
@@ -195,7 +193,7 @@ async function run() {
     core.info('✅ 성공적으로 메타데이터를 업데이트했습니다.')
     core.info(`  - Tags: ${tags.join(', ')}`)
     core.info(`  - Description: ${description}`)
-    core.info(`  - Suggested Slug / Page ID: ${slug}`)
+    core.info(`  - Permalink: ${frontmatter.permalink}`)
 
   } catch (error) {
     core.setFailed(error.message)

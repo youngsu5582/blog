@@ -14,7 +14,7 @@ image:
 permalink: /posts/rabbitmq-vs-kafka
 ---
 **[Reference Materials]**  
-- **Video:** [[10 Minutes Tech Talk] Rockba's RabbitMQ vs Kafka](https://www.youtube.com/watch?v=w8xWTIFU4C8)  
+- **Video:** [[10 Minutes Tech Talk] RabbitMQ vs Kafka](https://www.youtube.com/watch?v=w8xWTIFU4C8)  
 - **Blog:** 
 	- [Common Message Streaming Platform for Kakao Developers - Kafka](https://tech.kakao.com/posts/485)  
 	- [RABBITMQ IN DEPTH](https://devconnor.tistory.com/159)

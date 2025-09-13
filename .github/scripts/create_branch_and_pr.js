@@ -135,7 +135,7 @@ async function writeJobSummary({ title, mdFilePath, imagePath, branchName, commi
     .addTable([
       [{data: '항목', header: true}, {data: '값', header: true}],
       ['제목', title],
-      ['Slug', frontmatter.page_id || '(없음)'],
+      ['Permalink', frontmatter.permalink || '(없음)'],
       ['브랜치', branchName],
       ['커밋', commitSha ? commitSha.slice(0, 7) : '(n/a)'],
       ['Markdown 경로', mdFilePath],
@@ -207,7 +207,7 @@ async function run() {
     const defaultBranch = await fetchDefaultBranch(octokit, owner, repo)
     const branchName = `issue-${issueNumber}`
     const { baseCommitSha } = await ensureBranch(octokit, owner, repo, defaultBranch, branchName)
-    
+
     const finalFileContent = fs.readFileSync(finalFilePath, 'utf-8')
     const imagePath = matter(finalFileContent).data.image.path
 

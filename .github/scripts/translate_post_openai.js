@@ -2,6 +2,7 @@
 import OpenAI from 'openai';
 import fs from 'fs/promises';
 import path from 'path';
+import matter from 'gray-matter';
 
 const postsDir = path.resolve(process.cwd(), '_posts');
 
@@ -21,6 +22,7 @@ async function main() {
   }
 
   const [, year, month, day, slug] = match;
+  const datePrefix = `${year}-${month}-${day}`;
   const newDir = path.join(postsDir, year, month, day, slug);
   await fs.mkdir(newDir, { recursive: true });
 
@@ -45,14 +47,22 @@ async function main() {
   const translation = response.choices[0].message.content.trim();
 
   // 2. Create the new English file with 'lang: en'
-  const enFilePath = path.join(newDir, `${slug}-en.md`);
-  const enContent = `lang: en\n${translation}`;
+  const translatedMatter = matter(translation);
+  translatedMatter.data.lang = 'en';
+  translatedMatter.data.author = 'Lee Youngsu'; // Set English author
+
+  const enContent = matter.stringify(translatedMatter.content, translatedMatter.data);
+
+  const enFilePath = path.join(newDir, `${datePrefix}-${slug}-en.md`);
   await fs.writeFile(enFilePath, enContent);
   console.log(`Successfully created English version: ${enFilePath}`);
 
   // 3. Create the new Korean file with 'lang: ko'
-  const koFilePath = path.join(newDir, `${slug}-ko.md`);
-  const koContent = `lang: ko\n${originalContent}`;
+  const originalMatter = matter(originalContent);
+  originalMatter.data.lang = 'ko';
+  const koContent = matter.stringify(originalMatter.content, originalMatter.data);
+
+  const koFilePath = path.join(newDir, `${datePrefix}-${slug}-ko.md`);
   await fs.writeFile(koFilePath, koContent);
   console.log(`Successfully created Korean version: ${koFilePath}`);
 

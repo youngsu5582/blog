@@ -14,7 +14,7 @@ image:
 permalink: /posts/rabbitmq-vs-kafka
 ---
 **[참고 자료]**
-- **영상:** [[10분 테코톡] 록바의 RabbitMQ vs Kafka](https://www.youtube.com/watch?v=w8xWTIFU4C8)  
+- **영상:** [[10분 테코톡] RabbitMQ vs Kafka](https://www.youtube.com/watch?v=w8xWTIFU4C8)  
 - **블로그:** 
 	- [카카오 개발자들을 위한 공용 Message Streaming Platform - Kafka](https://tech.kakao.com/posts/485)  
 	- [RABBITMQ IN DEPTH](https://devconnor.tistory.com/159)
