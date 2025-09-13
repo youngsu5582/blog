@@ -161,13 +161,14 @@ async function run() {
     const { title } = generateSlugAndTitle(issueTitle)
 
     tempFilePath = `temp_issue_${issueNumber}.md`
-    // frontmatter 없이 순수 본문 내용만 임시 파일에 저장
-    fs.writeFileSync(tempFilePath, issueBodyTrimmed)
+    // frontmatter에 title을 추가하여 임시 파일 생성
+    const tempFileContent = matter.stringify(issueBodyTrimmed, { title })
+    fs.writeFileSync(tempFilePath, tempFileContent)
     core.info(`✅ 임시 파일 생성: ${tempFilePath}`)
 
     // 2. 메타데이터 생성 스크립트 실행
     core.info('--- 메타데이터 생성 스크립트 실행 ---')
-    execSync(`node .github/scripts/generate_metadata_from_file.js --file=${tempFilePath}`, { stdio: 'inherit' })
+    execSync(`node .github/scripts/generate_metadata_from_file.js --file=${tempFilePath}`, { stdio: 'inherit', env: process.env })
     core.info('--- 메타데이터 생성 완료 ---')
 
     // 3. 최종 파일명 결정 및 파일 이름 변경
@@ -199,7 +200,7 @@ async function run() {
 
     // 4. 이미지 생성 스크립트 실행
     core.info('--- 이미지 생성 스크립트 실행 ---')
-    execSync(`node .github/scripts/generate_image_from_file.js --file=${finalFilePath}`, { stdio: 'inherit' })
+    execSync(`node .github/scripts/generate_image_from_file.js --file=${finalFilePath}`, { stdio: 'inherit', env: process.env })
     core.info('--- 이미지 생성 완료 ---')
 
     // 5. Git 작업 및 PR 생성

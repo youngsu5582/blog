@@ -100,29 +100,39 @@ async function generateImageWithGemini(apiKey, apiUrl,
   const title = frontmatter.title || ''
 
   const prompt = `
-**Task:** Create a clean, professional, and informative 16:9 tech infographic thumbnail. The style should be approachable and
-      illustrative, referencing the two provided sample images.
+**Persona:** You are a top-tier graphic designer specializing in creating friendly and viral-worthy tech infographics. Your style is clean, modern, and uses cute mascots to make complex topics easy to understand.
 
-**Analyze:** Read the provided "Blog Post Content" to understand the core technical concepts.
+**Task:** Create a 16:9 thumbnail image for a technical blog post. The image should be an engaging infographic that is both informative and visually appealing, in a style similar to the provided sample images.
 
-**Instructions:**
-1.  **Style:** The new image must match the clean, 2D vector illustration style of the sample images. Use friendly characters or clear
-      icons to represent the technologies. The overall mood should be bright, clear, and educational, while maintaining a professional
-      aesthetic.
-2.  **Content:** Create a diagram or scene that visually explains the concepts from the blog post. For "RabbitMQ VS Kafka", this would
-      be a side-by-side comparison.
-3.  **Text:** Render the post's title, "${title}", clearly at the top. Add smaller, legible labels and annotations within the diagram to
-      explain key parts (e.g., "Exchange", "Partitions", "Consumer Group"). The text must be 100% accurate and rendered in a clean, rounded
-      sans-serif font.
-4.  **Color:** Use a bright, modern, and appealing color palette that ensures high readability. Avoid overly saturated or childish
-      pastel colors.
+**Analysis:** First, thoroughly analyze the provided "Blog Post Content" to fully grasp the main subject, key components, and their relationships.
+
+**Core Instructions:**
+1.  **Visual Style:**
+    *   **Overall:** A clean, 2D vector illustration style. The mood must be bright, positive, and professional.
+    *   **Characters:** Use cute, simple, and friendly mascot characters to represent technologies or concepts (e.g., a happy robot for an automation tool, a speedy messenger bird for a message queue). The characters should be expressive but not overly childish.
+    *   **Reference:** The final image's style and quality should be consistent with the two sample images provided.
+
+2.  **Content & Composition:**
+    *   **Layout:** Design a clear, easy-to-follow diagram or scene that visually explains the core message of the blog post. For a comparison post (e.g., "RabbitMQ vs. Kafka"), use a clear side-by-side layout with distinct visual identities for each.
+    *   **Clarity:** The composition should guide the viewer's eye logically through the information. Use visual cues like arrows, lines, and logical grouping.
+
+3.  **Typography (CRITICAL):**
+    *   **Title:** The blog post title, "${title}", must be the most prominent text element, placed clearly at the top.
+    *   **Legibility:** All text, including labels and annotations, MUST be perfectly legible, horizontally aligned, and free of spelling errors. This is the most important requirement.
+    *   **Font:** Use a clean, modern, and rounded sans-serif font (similar to 'M PLUS Rounded 1c' or 'Poppins').
+    *   **Placement:** Place text within speech bubbles, on clean background shapes, or with ample padding to ensure it stands out and is easy to read. Do not place text directly over complex parts of the illustration.
+
+4.  **Color Palette:**
+    *   Use a bright, harmonious, and modern color palette. The colors should enhance readability and create a pleasant viewing experience.
+    *   Ensure high contrast between text and its background.
 
 **Blog Post Content to Analyze:**
 ---
 ${fullFileContent}
 ---
 
-**Negative Prompts:** 3D rendering, photorealistic, dark, gloomy, messy, blurry, low-quality, childish, too playful.
+**Negative Prompts (What to Avoid):**
+Photorealism, 3D rendering, dark or gloomy themes, messy or cluttered layouts, blurry or low-resolution elements, unreadable or distorted text, generic stock-art style.
 `.trim();
 
   core.info(`🎨 Generated Prompt:${prompt.slice(0, 500)}...`)

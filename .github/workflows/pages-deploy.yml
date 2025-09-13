@@ -1,15 +1,26 @@
-name: Build and Deploy Jekyll site to gh-pages
+# .github/workflows/pages-deploy.yml
+
+name: Build and Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
+# 'pages'에 대한 쓰기 권한을 지정하여 배포를 허용합니다.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시 실행 제어: 동일한 브랜치에 대한 여러 푸시가 있을 경우 이전 실행을 취소
+concurrency:
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
-  build_and_deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # This is required to push to the gh-pages branch
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,13 +28,14 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: '3.1.4'
           bundler-cache: true
-
+          cache-version: 1
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # package.json이 요구하는 버전에 맞춰 설정
+          node-version: '20'
           cache: 'npm'
 
       - name: Install Node.js Dependencies
@@ -34,14 +46,27 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Build the site
-        run: bundle exec jekyll build
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        run: bundle exec jekyll build --source . --destination _site
         env:
           JEKYLL_ENV: production
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
-          cname: youngsu5582.life
+          path: ./_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
