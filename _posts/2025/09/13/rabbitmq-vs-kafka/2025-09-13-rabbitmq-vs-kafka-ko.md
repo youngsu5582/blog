@@ -1,4 +1,5 @@
 ---
+lang: ko
 title: RabbitMQ VS Kafka
 author: 이영수
 date: 2025-09-13T12:45:20.889Z
@@ -10,7 +11,7 @@ tags:
 description: 'RabbitMQ와 Kafka 의 차이점과 각 시스템의 특징을 비교하여, 적합한 사용 사례를 제시합니다.'
 image:
   path: assets/img/thumbnail/2025-09-13-rabbitmq-vs-kafka.png
-page_id: rabbitmq-vs-kafka
+permalink: /posts/rabbitmq-vs-kafka
 ---
 **[참고 자료]**
 - **영상:** [[10분 테코톡] 록바의 RabbitMQ vs Kafka](https://www.youtube.com/watch?v=w8xWTIFU4C8)  
