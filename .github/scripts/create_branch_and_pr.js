@@ -106,7 +106,14 @@ function getEnvVars() {
   const issueNumber  = process.env.ISSUE_NUMBER     // ex) "123"
   const rawTitle     = process.env.ISSUE_TITLE      // ex) "[블로그 초안] Spring WebFlux vs Spring MVC"
   const issueBodyRaw = process.env.ISSUE_BODY       // JSON 문자열: "\"# 제목\n본문\""
-  const token        = process.env.GITHUB_TOKEN
+  // GH_PAT (Personal Access Token)을 우선적으로 사용하고, 없으면 GITHUB_TOKEN을 사용
+  const token = process.env.GH_PAT || process.env.GITHUB_TOKEN
+  if (process.env.GH_PAT) {
+    core.info('✅ 개인용 액세스 토큰(GH_PAT)을 사용하여 인증합니다.')
+  } else {
+    core.warning('🟠 기본 GITHUB_TOKEN을 사용하여 인증합니다. (다른 워크플로우를 트리거하지 않을 수 있음)')
+  }
+  // Metadata generation (still needs openai)
   const openaiApiKey = process.env.OPENAI_API_KEY
 
   if (!repoFullName || !issueNumber || !rawTitle || !issueBodyRaw || !token || !openaiApiKey) {

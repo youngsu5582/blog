@@ -1,0 +1,81 @@
+# .github/workflows/preview.yml
+
+name: Jekyll Preview Build
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1.4'
+          bundler-cache: true
+          cache-version: 1
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: 🔎 1. Print Pages configuration
+        run: |
+          echo "--- Pages Action Outputs ---"
+          echo "base_path: ${{ steps.pages.outputs.base_path }}"
+          echo "origin: ${{ steps.pages.outputs.origin }}"
+          echo "--------------------------"
+
+      - name: Create preview config file
+        run: |
+          echo "Creating _preview_config.yml..."
+          echo "url: ${{ steps.pages.outputs.origin }}" >> _preview_config.yml
+          echo "baseurl: ${{ steps.pages.outputs.base_path }}" >> _preview_config.yml
+          echo "--- _preview_config.yml content ---"
+          cat _preview_config.yml
+          echo "-----------------------------------"
+
+      - name: Build with Jekyll
+        run: |
+          echo "Starting Jekyll build with override config..."
+          bundle exec jekyll build --config _config.yml,_preview_config.yml --destination _site
+          echo "Jekyll build finished."
+        env:
+          JEKYLL_ENV: production
+
+      - name: 🔎 2. Search for hardcoded URL in built files
+        run: |
+          echo "--- Searching for 'youngsu5582.life' in _site directory ---"
+          grep -r "youngsu5582.life" _site || echo "✅ Production URL not found in built files. This is correct."
+          echo "----------------------------------------------------------"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
