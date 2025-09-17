@@ -1,0 +1,325 @@
+---
+title: "사용하는 Jackson의 설정 및 기능 정리"
+author: "이영수"
+date: 2025-06-16T15:42:27.466Z
+tags: [ "Jackson", "Java", "직렬화", "역직렬화" ]
+description: "Jackson 라이브러리를 활용한 Java 객체의 직렬화 및 역직렬화 방법과 어노테이션 사용법을 정리한 포스트입니다."
+image:
+  path: assets/img/thumbnail/2025-06-16-사용하는-Jackson-설정들-정리.png
+permalink: /posts/a-summary-of-the-jackson-settings-i-use/
+---
+
+> 프로젝트에서 사용하는 Jackson 어노테이션 및 기능들을 정리한 내용이다.
+
+Java-Spring 개발자라면 Jackson 을 모를 수 없다.
+아무리 시대가 달라져도 웹 요청의 근본은 JSON이기 때문이다.<br>
+그리고 Java 에서 직렬화/역직렬화는 생각보다 까다롭다. (`implements Serializable`,
+`byte 단위 변환`)
+
+하지만, 스프링이 너무 잘 해주는 바람에 직렬화와/역직렬화에 대해 크게 관심을 가지지 않았을 수 있다.
+
+그럼에도, Jackson 은 단순히
+
+```java
+var objectmapper = new ObjectMapper();
+objectMapper.
+
+writeValueAsString(value);
+```
+
+API를 보내기 위해서, 테스트를 하기 위해서 `writeValueAsString` 만 쓰기에는 매우 아쉬운, 매력적인 라이브러리다.
+
+아래는 어노테이션들과 Jackson을 더 깊게 사용하는 방법들에 대해 간단히 다루어보았다.
+
+### readValue, convertValue
+
+> 직렬화: Java 객체 -> JSON 문자열 ( DB에 JSON 값을 보낼 때,Java 객체를 HTTP 응답할 때 )
+> 역직렬화: JSON 문자열 -> Java 객체 ( DB 에서 JSON 값을 가져올 때, HTTP 요청을 Java 객체로 변환할 때 )
+
+```java
+String json = "{\"name\": \"Alice\", \"age\": 30}";
+User user = objectMapper.readValue(json, User.class);
+
+Map<String, Object> map = Map.of("name", "Alice", "age", 30);
+User user = objectMapper.convertValue(map, User.class);
+```
+
+주로 이 두 가지는 테스트할 때 사용했다.
+
+readValue는 실제 요청 자체를 직렬화한다. (URL, InputStream, Byte, String 등)
+
+readValue를 통해 ENUM 값에 존재하지 않는 값을 넣을 때 어떻게 역직렬화되는지 등을 테스트할 수 있다.
+( 즉, 일반적인 우리 자바 구조로는 존재하지 않는 요소들을 테스트 할 때 용이 )
+
+convertValue는 Java 객체를 직렬화한다.
+그래서, 어노테이션에 따라서 우리가 의도한 대로 잘 나오는지 테스트 할 수 있다.
+
+### JsonInclude
+
+직렬화 할 때 어떤 필드를 포함할지 제어하는 설정이다.
+
+ENUM 으로 다양한 설정들이 있다.
+(`@JsonInclude(JsonInclude.Include.NON_NULL)`와 같이 사용)
+
+- NON_NULL : NULL 일 아닐때 직렬화
+- NON_EMPTY : 비어있는게 아닐때 직렬화 ( null, `""`, 빈 배열 및 컬렉션, absent 값 )
+- ALWAYS : 항상 포함
+
+```java
+// 이제 사용되지 않는 레거시 데이터
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+private List<Map<String, Long>> deprecatedData;
+
+// 현재 사용하고 있는 데이터
+private SortedSet<Data> currentData;
+```
+
+이와 같이, DB에 존재하는 값은 가져오지만 저장할 때는 값이 저장되지 않도록 사용할 수 있다.
+( DB 에는 값이 포함되지 않으므로, 저장되지 않음 )
+
+```java
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CreditDeductionDto {
+	...
+}
+```
+
+NULL 인 값들은 자동으로 직렬화되지 않게 한다.
+
+### JsonView
+
+컨트롤러 메소드의 View 를 기준으로 필드에 선언된 View 가 이 기준에 포함되는지 사용한다.
+(`ObjectMapper.writerWithView(View.class)`를 내부적으로 사용해서 처리한다.)
+
+```java
+public class DtoView {
+
+  public static class Client {
+
+  }
+
+  public static class Admin {
+
+  }
+}
+
+public class RequestDto {
+
+  @JsonView(DtoView.Client.class)
+  private String imageUrl;
+
+  @JsonView(DtoView.Admin.class)
+  private Client client;
+}
+
+@JsonView(DtoView.Admin.class) // ← 이게 기준이 된다
+@PostMapping(...)
+public ResponseEntity<RequestDto> request(...) {
+  return ResponseEntity.ok(dto);
+}
+```
+
+특정 칼럼들은 어드민한테만 보여줘야 할 때 사용 가능하다.
+`@JsonView(DtoView.Client.class)`를 선언하면 Client는 역직렬화되지 않는다.
+
+### JsonIgnoreProperties
+
+클래스, 필드 수준에서 JSON 직렬화 / 역직렬화 시 특정 프로퍼티를 무시하도록 지정
+
+```java
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class User { ...
+}
+```
+
+알 수 없는 값들은 무시한다.
+
+-> 매우 자주 사용된다. ⭐️ (DTO의 변화에 엄격하게 반응하기 어려울 수 있음. - 수정되거나 삭제되거나, 꼭 있어도 되지 않는 데이터 등)
+
+```java
+@JsonIgnoreProperties(allowGetters = true)
+@JsonIgnoreProperties(allowSetters = true)
+```
+
+- allowGetters: 읽기 전용, 출력(직렬화)은 허용하나 입력(역직렬화)은 허용하지 않음
+
+- allowSetters: 쓰기 전용, 입력(역직렬화)은 허용하나 출력(직렬화)은 허용하지 않음
+
+해당 부분은 다소 사용하기 어렵다. DB에서 값을 가져오되, DB에 값은 저장되지 않도록 하고 싶다면?
+
+1. 역직렬화를 통해 객체를 만든다.
+2. 객체를 JSON 으로 직렬화 해 HTTP 로 반환한다.
+
+DB에 빈 값을 저장하기 싫어서 직렬화를 막는다면? -> HTTP 로 직렬화 할 때도 포함되지 않는다.
+
+### JsonCreator
+
+JSON 데이터를 Java 객체로 역직렬화 할 때 어떤 방법을 사용할지 명시적으로 알려준다.
+
+(Jackson 은 기본적으로 `기본 생성자` + setter 방식으로 객체를 만든다.)
+
+```java
+
+@JsonCreator
+public static ExternalApi fromValueOrUnknown(String value) {
+  for (ExternalApi externalApi : ExternalApi.values()) {
+    if (externalApi.getAlias().equals(value)) {
+      return externalApi;
+    }
+  }
+  return UNKNOWN;
+}
+```
+
+ENUM 은 기본적으로 `EnumSerializer / EnumDeserializer` 로 동작한다.
+(name 값을 그대로 출력 / Enum.valueOf 로 찾음)
+
+정적 팩토리 메소드를 사용하고 싶을 때 사용 가능하다.
+
+### JsonValue
+
+```java
+
+@JsonValue
+public String getAlias() {
+  return alias;
+}
+```
+
+직렬화 할때 어떤 값을 사용할지 명시적으로 알려준다.
+ENUM 의 값을 다른 값으로 반환하고 싶을때 사용 가능하다.
+
+### JsonIgnore
+
+```java
+
+@JsonIgnore
+private long privateId;
+```
+
+직렬,역직렬화에 무시될 값을 지정한다.
+내부에서만 사용되고 절대 노출되면 안되는 값을 지정할 때 사용 가능하다.
+
+### JsonFormat
+
+```java
+
+@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+private LocalDateTime createdAt;
+```
+
+`2025-04-29 00:23:47.930` 와 같이 DB 에 저장되어 있으면?
+
+- DateTimeFormat : Spring 제공 포맷 어노테이션, MVC 바인딩할 때 사용
+- JsonFormat : Jackson 제공 어노테이션, 패턴에 맞게 변환, 타임존을 지정하여 특정 시간대로 변환 가능 ( `"2025-06-16T14:36:36"` 와 같이
+  변환 )
+
+두개를 같이 지정하여, 스프링 요청으로 오든 JSON 요청,응답으로 오든 일관되게 처리 가능하다.
+
+### JsonTypeInfo / JsonSubTypes
+
+다형성 구조를 Jackson으로 직렬화/역직렬화 해주는 어노테이션이다.
+흔히 Java 의 꽃은 Interface 라고 하지 않던가.
+하지만 Jakckson이 인터페이스의 정보만 있으면 어떻게 직렬화/역직렬화를 해야 하는지 알 수 없다.
+
+```java
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.EXISTING_PROPERTY,
+  property = "type",
+  visible = true,
+  defaultImpl = DefaultOption.class
+)
+```
+
+- `use = JsonTypeInfo.Id.NAME` : 하위 클래스를 이름으로 구분
+- `include = JsonTypeInfo.As.EXISTING_PROPERTY` : 존재하는 속성을 통해 추론
+- `property = "type"` : type 속성으로 추론
+- `visible = true` : 추론한 타입의 값을 보여준다고 설정
+- `defaultImpl` : 일치한 type 이 없으면 지정하는 기본 클래스
+
+```java
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = AOption.class, name = "a"),
+	...
+    })
+```
+
+-> type 이 a 라면? AOption 으로 역직렬화 하라는 의미
+
+### AnnotationIntrospector
+
+Jackson 은 직렬화/역직렬화할 때 위 수많은 어노테이션들을 읽어서 결정한다.
+이런 어노테이션들을 어떻게 해석할지 정의하는게 `AnnotationIntroSpector` 이다.
+
+```java
+public class CustomAnnotationIntrospector extends NopAnnotationIntrospector {
+
+  @Override
+  public Object findSerializer(Annotated annotated) {
+    if (annotated.hasAnnotation(CustomAnnotation.class)) {
+      return CustomFieldSerializer.class;
+    }
+    return null;
+  }
+
+  @Override
+  public Object findDeserializer(Annotated annotated) {
+    if (annotated.hasAnnotation(CustomAnnotation.class)) {
+      return CustomFieldDeSerializer.class;
+    }
+    return null;
+  }
+}
+```
+
+우리가 만든 커스텀 어노테이션을 만들고 직렬/역직렬화를 결정할 수 있다.
+
+```java
+ObjectMapper mapper = new ObjectMapper();
+
+AnnotationIntrospector pair = AnnotationIntrospector.pair(
+  new JacksonAnnotationIntrospector(),
+  new CustomAnnotationIntrospector());
+
+mapper.
+
+setAnnotationIntrospector(pair);
+```
+
+그 후, 어노테이션 페어로 하나를 정할 수 있다.
+
+```java
+public class CustomAnnotationIntrospector extends NopAnnotationIntrospector {
+
+  private static final JacksonAnnotationIntrospector DELEGATOR = new JacksonAnnotationIntrospector();
+
+	...
+
+  @Override
+  public List<NamedType> findSubtypes(Annotated a) {
+    return INTROSPECTOR.findSubtypes(a);
+  }
+```
+
+이런식으로 위임자를 만들어 사용할 것만 오버라이딩 하고 나머지는 지정하지 않을 수 있다.
+
+직렬, 역직렬화 할 때 JsonValue 를 무시하게
+( NopAnnotationIntrospector 는 말그대로 정말 아무것도 하지 않는 클래스 )
+
+---
+
+사실, 프로젝트를 하면서 직렬화/역직렬화 마스터가 되어가는 것 같다 ㅋㅋ
+
+- DB 에 JSON 으로 저장 / 읽기
+- Redis 에 JSON 저장 / 읽기
+- 메시징 큐에 메시지 발행
+- 웹 요청 / 응답
+
+어노테이션들을 잘 모르다면, 응답 및 데이터 처리를 위한 코드가 비즈니스 코드에 덕지덕지 붙거나 데이터 설계에 문제가 생길 수 있다.
+가볍게나마 알아두면 좋을 듯 🙂
+
+나중에 혹시나 더 사용하는 요소들이 있으면 조금씩 추가해나가야겠다.

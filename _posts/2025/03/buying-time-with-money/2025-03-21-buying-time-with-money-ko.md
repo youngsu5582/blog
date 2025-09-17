@@ -1,0 +1,415 @@
+---
+author: 이영수
+date: 2025-03-21 22:32:50.832000+00:00
+description: 블로그 포스트 작성 시 소개글과 섬네일 생성을 자동화하였으며, OpenAI API를 이용해 불편함을 개선했다. 결제 및 토큰
+  처리 방법도 공유하며, 스크립트를 통해 시간을 단축하고 작업 효율성을 높였다. 이 과정에서 발생하는 비용과 시간 절약 효과를 강조하고 있다.
+image:
+  path: assets/img/thumbnail/2025-03-21-돈으로-시간-사기.png
+tags:
+- openai
+- blog
+- automation
+title: '돈으로 시간을 사기 - 부제 : openai 통한 게시글 소개글 및 섬네일 자동 생성 스크립트'
+lang: ko
+permalink: /posts/buying-time-with-money/
+---
+
+> 해당 글은 블로그를 작성하며 느낀 불편함을 해결한 내용을 다룹니다.
+
+## 소개글, 섬네일 생성의 불편함
+
+블로그를 하면서 SEO 를 위해서도, 가독성을 위해서도 포스트에 소개글을 작성하는 것과 섬네일을 포함하는게 매우 중요시 하다고 느꼈다.
+그래서, GPT의 도움을 받아 포스트에 대한 소개글과 섬네일을 받는 식으로 포함을 시켰다.
+
+이떄, 개인적으로 느끼는 불편함이 있었다.
+
+![500](https://i.imgur.com/769WdYi.png)
+
+GPT 를 들어가서 직접 포스트를 복사해서 넣고, 해당 내용을 다시 소개글에 작성해야 했다.
+
+![500](https://i.imgur.com/oBNjPTn.png)
+
+DALL-E 를 사용해야만, 매력있는 그림이 나오는데 위에서 소개글에서 사용한 채팅이 아닌 새로운 모델을 선택해 요청을 해야하는 것도 불편한 점중 하나였다.
+
+뭐 어쩌겠는가.. 돈 없는 개발자는 직접 불편함을 뛸 수 밖에...
+하지만, 이번에 취업하며 이정도의 돈쯤이야 😎 + Open AI API를 코드로는 한번도 사용해보지 않은거 같아서 사용해볼겸 도입해보았다.
+
+## Payment
+
+> 모델 및 사용법에 대해 설명하기에 앞서, 결제 연동 및 방법에 대해서 설명한다.
+
+[payment-methods](https://platform.openai.com/settings/organization/billing/payment-methods) 에 들어가서 결제 수단을 등록한다.
+
+카드번호, CVC, 주소번호를 입력하면? 결제 수단으로 성공적으로 등록된다.
+등록후에 결제에 대해 안내해준다.
+
+![400](https://i.imgur.com/Qfxkppo.png)
+
+초기 금액 및 임계치 이하로 떨어지면 자동 충전할 지를 정한다.
+5 달러 이하일 시, 10달러를 충전하도록 설정했다.
+
+> 10%의 세금이 발생합니다. ( 5달러 진행시, 5.5달러 결제 )
+
+결제를 완료하면
+
+```
+We're happy to share that we've automatically moved your organization to **Usage Tier 1** 
+based on your usage history on our platform
+```
+
+와같이 Tier 1이 되었다는 안내를 해준다.
+그러면, [Limits](https://platform.openai.com/settings/organization/limits) 를 들어가서 비용 및 예산을 설정하자.
+
+> API 의 Late Limit 은 사실상 중요하지 않으므로 스킵한다.
+
+![](https://i.imgur.com/5GPJWSu.png)
+
+비용도 혹시나, 너무 많은 비용을 발생시키지 않게 제한적으로 지정했다.
+
+### Pricing
+[pricing](https://platform.openai.com/docs/pricing) 에 들어가서 금액을 확인해보자.
+
+금액은 `Price per 1M tokens` 을 기준으로 산정되어있다. ( 1_000_000 )
+
+![500](https://i.imgur.com/KqRpYVI.png)
+
+매우 다양한 모델들이 있다.
+이중에서, 자신이 적절한 모델을 선택하면 된다.
+
+이때, 근본적인 질문으로 `토큰이 얼마나 나오지?` 를 생각해야 한다.
+
+### 토큰 계산
+
+open ai 는 [tiktoken](https://github.com/openai/tiktoken) 을 통해 간편하게 입력값에 대한 토큰 수가 얼마나 되는지 알려준다.
+
+```python
+import tiktoken
+
+encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+text = """
+...
+"""
+
+tokens = encoding.encode(text)
+print("토큰 수:", len(tokens))
+```
+
+> 여기서 궁금해서 좀 더 학습해보았다.
+
+open ai 는 BPE ( Byte Pari Encoding ) 라는 통해 텍스트를 토큰이라는 숫자 시퀸스로 변환한다.
+( 놀랍게도 1994년 제안된 데이터 압축 알고리즘 )
+
+연속적으로 가장 많이 등장한 글자 쌍을 찾아서 글자로 병합하는 방식을 수행한다.
+-> 등장한 글자를 초기 사전으로 구성
+-> 연속된 두 글자를 한 글자로 병합
+( 빈도수를 기반으로 병합 )
+
+대략 사용하며 느낀 내용으론
+
+- 조합은 값이 변하지 않는다. ( 1은 16, `cab`는 55893 으로 고정과 같이 )
+- 최적의 서브워드 집합으로 만든다. ( 12346 이 10번 정도 등장하더라도 123, 46 으로 분리될 수도 있음 )
+
+일반적인 글로는 ( [3개월 간의 취준을 끝내며](https://youngsu5582.life/posts/3%EA%B0%9C%EC%9B%94-%EA%B0%94%EC%9D%98-%EC%B7%A8%EC%A4%80%EC%9D%84-%EB%81%9D%EB%82%B4%EB%A9%B0/) , 6652 word )
+토큰이 9350개 가량 나왔다.
+
+### DALL-E 3
+
+DALL-E 3 에 대해선 [DALL·E 3 API](https://help.openai.com/en/articles/8555480-dall-e-3-api) 에 자세히 알려준다.
+
+요약하면
+
+- Chat GPT 가 자동으로 더 상세한 프롬프트를 생성해준다. ( 사용자 대부분이 명확한 프롬프트를 생성하지 못하다 보니 )
+- `1024*1024`, `1024*1792`, `1792*1024` 사이즈의 이미지만 생성 가능하다.
+- quality 를 지정 가능하다. ( hd : 높은 퀄리티, 대기 시간 +, 더 비쌈 <-> standard : 적당한 퀄리티,더 쌈 )
+
+정도가 있다.
+
+비용은 한장당(Price per Image) 아래와 같다.
+
+![](https://i.imgur.com/nq5RDQV.png)
+
+Quality Standard, HD 를 생성해보면
+위 : standard, 아래 : hd
+
+![200](https://i.imgur.com/gmpl6CZ.png)
+
+![200](https://i.imgur.com/oEqOpgH.png)
+
+-> 꼭 hd만 좋다는 느낌은 아닐 수 있다. ( 각자 취향껏 선택 )
+
+### Credit Grants
+
+[Credit Grants](https://platform.openai.com/settings/organization/billing/credit-grants)
+
+![](https://i.imgur.com/dtFosoT.png)
+
+결제한 내역이 얼마나 사용 되었는지, 언제 만료되는지에 대해 알려준다.
+
+## 스크립트
+```python
+client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
+```
+
+클라이언트를 생성할때, 키가 필요하다.
+매번, 이 키 값을 주입해서 실행하거나 이를 하드코딩하는건 매우 불편할 것이다. ( 깃허브 올리기에도 껄끄러움 )
+
+### runner-with-env.py
+
+```python
+# test_run.py  
+import os  
+import subprocess  
+import sys  
+from dotenv import load_dotenv  
+from pathlib import Path  
+  
+load_dotenv(dotenv_path=".env")  
+process_path = "utils/process_thumbnail_and_description.py"  
+  
+requirements_path = Path(__file__).resolve().parent / "requirements.txt"  
+  
+print("📦 requirements.txt 설치를 시도합니다... : ", requirements_path)  
+  
+try:  
+    subprocess.run(  
+        [sys.executable, "-m", "pip", "install", "-r", str(requirements_path)],  
+        check=True  
+    )  
+except subprocess.CalledProcessError:  
+    print("❌ 패키지 설치 실패. requirements.txt가 올바른지 확인해주세요.")  
+    sys.exit(1)  
+  
+print("✅ 패키지 설치 완료.")  
+  
+# 3. 하위 프로세스 실행 (실제 처리 로직)  
+print("🚀 스크립트를 실행합니다.")  
+try:  
+    subprocess.run(  
+        [sys.executable,process_path],  
+        check=True  
+    )  
+except subprocess.CalledProcessError:  
+    print("❌ 처리 스크립트 실행 중 오류가 발생했습니다.")  
+    sys.exit(1)  
+  
+print("✅ 처리 완료.")
+```
+
+사용을 용이하게 하기 위해
+1. 상위 프로세스에서 env 를 불러와서 환경 변수를 설정
+2. 의존성 설치
+3. 하위 프로세스 실행
+
+의 형식으로 다른 스크립트를 구성해두었다.
+다른 프로세스로 교체 + 의존성 교체 하고 싶으면 path 만 바꾸면 된다.
+
+### Chat Model
+
+```python
+def generate_description(prompt: str, language="ko") -> str:  
+    print("description 생성을 위해 API를 보냅니다.")  
+    completion = client.chat.completions.create(  
+        model="gpt-4o-mini-2024-07-18",  
+        messages=[  
+            system_message,  
+            {"role": "user", "content": prompt}  
+        ],  
+        temperature=0.2,
+        max_tokens=350,  
+    )  
+    print("description 생성을 위해 API가 완료 됐습니다.")  
+    summary = completion.choices[0].message.content.strip()  
+    print(completion)  
+    return summary
+
+def generate_summary_prompt(content: str, language: str = "ko") -> str:  
+    return f"""아래 글을 {language}로 간결하게 요약하되,  
+요약문의 길이는 반드시 50자 이상 100자 이하로 작성해줘.  
+문장 중간이 끊기지 않도록 주의하고, 마지막에는 마침표 등으로 자연스럽게 마무리해줘.  
+출력은 요약문만 작성하고, 그 외 다른 설명이나 문구는 쓰지 말아줘.  
+  
+글:  
+{content}""".strip()
+	```
+
+프롬프트를 동적으로 생성하고, 요청을 보내서 받아서 사용한다.
+응답이 너무 큰 값이 되지않게 350 + 무작위를 보장할 필요가 없기에 온도는 0.2로 제한했다.
+
+```python
+system_message = {  
+    "role": "system",  
+    "content": (  
+        "출력되는 요약문은 반드시 50자 이상 100자 이하로 작성되어야 하며, 문장이 중간에서 끊기지 않고, "  
+        "마지막에 마침표 등으로 자연스럽게 마무리되어야 합니다. 추가적인 설명이나 문구는 포함하지 마세요."  
+        "사람이 작성하는 것과 같은 느낌으로 작성한다."  
+    )  
+}
+```
+
+system_message 역시도 전달
+
+`ChatCompletion` 을 반환해서 이를 우리가 사용할 수 있다.
+( 매우 많은 정보를 담아서 준다. )
+
+우리가 활용할만한 요소로는
+
+- created : Unix Timestamp ( EX: 1742559896 )
+- choices`[]`.message.content : AI가 생성한 텍스트 응답
+- usage.prompt_tokens : 요청에서 소비된 토큰 수
+- usage.completion_tokens : 응답에서 소비된 토큰 수
+- usage.total_tokens : 전체 소비된 토큰 수
+
+정도가 있다.
+
+여기서 대략 비용을 계산해보면?
+
+5208 token 의 input 이 발생했고, 76 token 의 ouput 이 발생했다고 가정한다.
+
+- 5208 × ($0.150 / 1,000,000)  = $0.0007812
+
+- 76 × ($0.600 / 1,000,000)  = $0.0000456
+
+> Input, Ouput 비용이 각자 다르다.
+
+두 개를 합하면 `$0.00083` 정도가 나온다. -> 환전하면  `₩1` 이다.  ( 사실상, 이미지가 비용 잡아먹는 주범 ☺️ )
+
+### Image Model
+
+```python
+def generate_and_save_image(prompt: str, save_path: Path):  
+    print("thumbnail 생성을 위해 DALL-E API를 보냅니다.")  
+    response = client.images.generate(  
+        prompt=prompt,  
+        model="dall-e-3",  
+        n=1,  
+        quality="hd",  
+        size="1024x1024"  
+    )  
+    print("thumbnail 생성을 위해 DALL-E API가 완료 됐습니다.")  
+    print(response)  
+  
+    image_url = response.data[0].url  
+    img_data = requests.get(image_url).content  
+    with open(save_path, 'wb') as f:  
+        f.write(img_data)
+
+def generate_thumbnail_prompt(title: str, description: str) -> str:  
+    return f"""  
+백엔드 기술 블로그 게시물에 사용한 깔끔하고 현대적인 썸네일 일러스트를 생성하세요.  
+I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS‑IS.  
+  
+📌 게시물 제목: "{title}"  
+📝 게시물 설명: "{description}"  
+  
+🎯 스타일 및 콘텐츠 가이드라인:  
+...
+""".strip()
+```
+
+설정을 살펴보면
+DALL-E 3 모델 사용, size 는 최소치, quality 는 hd로 설정했다. ( 다소 비싸도, 생동감 있는 이미지 사용 위해 )
+
+> I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS‑IS.
+
+해당 구문은 위에서 말했듯 DALL-E 3는 자동으로 프롬프팅을 생성해주는데, 위 문구를 포함하면 내가 설정한 가이드라인을 기반 최대한 프롬프팅을 따라준다. - [관련 가이드](https://www.restack.io/p/openai-python-knowledge-answer-dalle-playground-cat-ai)
+
+반환 값으로는
+
+- revised_prompt : API가 내부적으로 다듬어 실제 사용된 최종 프롬프트
+- url : 생성된 이미지 파일의 pre-signed url - HTTP Client 통해 다운로드 및 조회가 가능하다.
+
+등이 있다.
+
+사진당 비용이 발생하므로 실행될때마다 `$0.08`  가 나간다. ( `₩117` 생각보다 비싼거 같기도 하고, 싼거 같기도 하고...? )
+
+### main
+
+```python
+post = frontmatter.load(file_path)
+
+if not check_exist(post, 'description'):  
+    prompt_for_description = generate_summary_prompt(post.content)  
+    summary = generate_description(prompt_for_description, language="ko")  
+    post['description'] = summary
+
+if not check_exist(post, 'image'):  
+    if not check_exist(post, 'title'):  
+        raise ValueError("The post does not have a title. Cannot generate an image prompt without a title.")  
+    prompt_for_image = generate_thumbnail_prompt(post["title"], post["description"])  
+  
+    image_save_dir = workspace / "assets" / "img" / "thumbnail"  
+  
+    image_filename = file_path.stem + ".png"  
+    save_path = image_save_dir / image_filename  
+  
+    generate_and_save_image(prompt_for_image, save_path)  
+  
+    relative_path = str(save_path.relative_to(workspace)).replace("\\", "/")  
+    post['image'] = {'path': relative_path}
+
+with open(file_path, 'w', encoding='utf-8') as f:  
+    f.write(frontmatter.dumps(post))
+```
+
+frontmatter 는 일종의 메타데이터이다.
+여기에, 제목 섬네일, 설명 등등을 넣을수 있다. ( 옵시디언도 이를 통해 태그 및 정보 관리 )
+
+생성된 소개글, 이미지 값을 넣고 파일을 덮어쓴다.
+
+```
+description: AWS 프리티어를 활용해 EC2, RDS, ElastiCache, S3 등으로 인프라를 구성하는 과정을 상세히 설명합니다.  
+  VPC 설정, 보안 그룹 구성, CodeDeploy와 Github Actions 연동 등 다양한 요소를 다루며, 비용 효율적인 방법으로 서버를  
+  운영하는 방법을 제시합니다.  
+image:  
+  path: assets/img/thumbnail/2025-03-15-프리티어로만-배포해보기.png
+```
+
+게시글에 자동으로 description 과 image 가 추가되어있다.
+
+## 결론
+파일 경로만 바꾸고 실행을 하면 자동으로 소개글 생성 및 섬네일 생성을 자동으로 처리해준다.
+
+```
+파일 처리 :  /Users/dragonsu/IdeaProjects/blog/_posts/2025-03-15-프리티어로만-배포해보기.md
+
+description 생성을 위해 API를 보냅니다.
+description 생성을 위해 API가 완료 됐습니다.
+
+thumbnail 생성을 위해 DALL-E API를 보냅니다.
+thumbnail 생성을 위해 DALL-E API가 완료 됐습니다.
+
+처리 완료 : _posts/2025-03-15-프리티어로만-배포해보기.md
+```
+
+원래는 해당 요소를 Github Action 에 넣으려고 했으나
+
+- 파일이 추가되고, 수정되므로 변경을 커밋해야 하는 점
+- 커밋을 하기 때문에 내가 글 작성하기 전 Pull을 해줘야 하는 점
+
+2가지 이유로 utils 함수로만 포함시켜놓았다.
+( 차차, pre-commit 통해 되는지에 대해서도 접근해볼 예정이다. )
+
+1분 30초 가량의 시간이 줄어들었다고 생각한다.
+
+- 웹 브라우저에 GPT를 들어가는 시간 - 10초
+- 입력창에 프롬프트 복사 + 아티클 내용 넣는 시간 - 20초
+- 생성 기다리는 시간 + 복사하는 시간 - 20초~30초
+- 새로운 GPT Chat 사용 -> 입력창에 프롬프트 복사 + 아티클 내용 넣는 시간 - 15초
+- 이미지 생성 기다리는 시간 + 복사하는 시간 - 20초~30초
+- 게시글에 `desciripton` 및 이미지 폴더에 저장 + `image/path` 입력하는 시간 - 20초 ( image/path 를 일일히 입력하는게 매우 귀찮다. )
+
+이제 우리가 하는건?
+
+- 스크립트에 file_path 변경 - 10초
+- 스크립트 실행 - 5초
+
+끝! 😎
+
+그리고, 가장 중요한건 위 동기적 단계를 비동기로 스크립트 실행하고 기다렸다 push 하면 끝난다.
+
+`$0.08` ( 현재 기준(2025.03.21), 117원의 비용 ) 으로 1분 30초를 줄였으니 매우 효율적인거 아닐까? 🙂
+생각보다의 비용은 적고, 시간은 매우 단축시켜 꽤나 만족스러운 작업이였다.
+
+해당 내용의 소개글과 섬네일 역시도 자동으로 생성되었다.
+
+> 코드 전체가 궁금하다면 [process_thumbnail_and_description](https://github.com/youngsu5582/blog/blob/main/utils/process_thumbnail_and_description.py) 를 참고해주세요!
