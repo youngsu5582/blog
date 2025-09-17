@@ -9,6 +9,7 @@ categories: ['Retrospective', '2023']
 image:
   path: https://velog.velcdn.com/images/dragonsu/post/df801d07-493a-4d08-9aa2-751e00da33db/image.png
 permalink: /posts/2023-retrospective/
+page_id: 2023-retrospective
 ---
 
 > This post has been translated from Korean to English by Gemini CLI.

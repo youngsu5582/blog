@@ -1,0 +1,211 @@
+---
+title: "실수할 여지 주지않기"
+author: 이영수
+date: 2024-04-13T09:25:00.526Z
+description: 실수를 방지해나가는 기본적인 철칙
+categories: ['프로그래밍', '클린코드']
+image:
+  path: https://velog.velcdn.com/images/dragonsu/post/95758d6d-64c6-40d8-8438-3014732b5216/image.jpeg
+lang: ko
+permalink: /posts/dont-leave-room-for-mistakes/
+---
+https://devs0n.tistory.com/128
+
+위의 글의 재정리하며 우테코의 프로그래밍 요구 사항을 다시 생각해보며 작성한 글입니다.
+
+![350](https://i.imgur.com/6btHni6.png)
+- 우테코의 프로그래밍 요구 사항
+
+---
+
+>**더러운 냄새를 풍기는 코드가 나 좀 고쳐 달라고 저절로 모습을 드러내는 코딩 표준을 만드는 경지에 이른 단계입니다.**
+>- 조엘 스폴스키 ( 모어 조엘 온 소프트웨어 )
+
+해당 글에 있는 엄청나게 좋은 인용문이다
+### if 문 중괄호 사용하기
+
+우테코에서 지켜야하는 필수 요구사항 중 하나
+- 처음 프리코스를 할때는 if문에 한줄인데 왜 굳이 불필요한 중괄호가 필요하지?
+- 코드적으로,가독성적으로 더욱 이점을 줄수있지 않나?
+```java
+if(flag)
+	doFlagTrue()
+...
+```
+라고 생각했다.
+하지만, 코드 한줄이 추가되어야 한다면?
+=> 그때 중괄호를 추가하면 되는거 아니야??
+
+틀린말이 아니다.
+하지만, 처음 작성할때부터 중괄호를 추가하는 것과 필요할때 중괄호를 추가하는 것은 사뭇 다르다
+만약 누가 중괄호를 만들지 않는 실수를 한다면?
+누가 그런 실수를?
+![350](https://i.imgur.com/GS6TpAc.png)
+
+[Apple’s gotofail SSL Security Bug was Easily Preventable](https://embeddedgurus.com/barr-code/2014/03/apples-gotofail-ssl-security-bug-was-easily-preventable/)
+애플의 누군가도 했다 ㅇ.ㅇ
+
+>Braces shall always surround the blocks of code (a.k.a., compound statements), following if, else, switch, while, do, and for statements; single statements and empty statements following these keywords shall also always be surrounded by braces.
+>- [Barr Group](http://www.barrgroup.com/ "The Embedded Systems Experts")‘s Embedded C Coding Standard book.
+
+간단히 번역하면, `if,else,switch,while,do` 문은 항상 중괄호로 둘러싸야 해야한다는 뜻이다
+
+
+### else 사용하지 않기
+
+현재 상황이 명확한데, 굳이 if-else 를 하지않고 분리해야할 필요가 있나요?
+-> 틀린 말이 아니다.
+
+"체스에서 체크 메이트 <-> 체크 메이트가 아니다" 이 두 경우 말고 더 나올 경우가 있나요?
+-> Factos 👀
+
+하지만, 변화가 필요해지는 코드라면?
+
+- else 는 조건문에 걸리지 않은 모든 경우를 커버하기에
+  기존 조건문이 새로운 변화를 캐치하지 못하므로, 비즈니스 로직상 오류를 발생시킬 수 있다
+
+  EX) 결제 금액이 15000이상이라면 VIP를, 아니면 NORMAL 등급을 주세요
+  
+```java
+if(calculateMoney >= 15000){
+	return VIP;
+}
+else{
+	return NORMAL;
+}
+```
+
+여기에 만약 10000이상이면 SPECIAL 이라는 등급이 추가된다면?
+
+```java
+if(calculateMoney >= 10000) {
+	if(calculateMoney >= 15000){
+		return VIP;
+	}else{
+		return SPECIAL;
+	}
+} else {
+	return NORMAL;
+}
+```
+
+1. 해당 로직에 대한 구현을 까먹을때, 의도치 않은 방향으로 흘러간다.
+2. 너무 과장된 코드이나, else 문을 유지하기 위해 더욱 불편함을 초래할 수 있다
+
+```java
+if(calculateMoney >= 15000){
+	return VIP;
+}
+if(calculateMoney >= 10000){
+	return SPECIAL;
+}
+if(calculateMoney >= 0){
+	return NORMAL;
+}
+throw UnsupportedException("해당 결제 금액은 등급을 받을수 없습니다.");
+```
+이렇게 Early Return 을 통해, 더욱 가독성 좋게 코드를 보여줄 수 있다.
+
+마지막에 검증을 한번 더하고 넘기는 이유는?
+```java
+if(calculateMoney >= 15000){
+	return VIP;
+}
+if(calculateMoney >= 10000){
+	return SPECIAL;
+}
+return NORMAL;
+```
+사실상 else 를 사용하는 것과 다를게 없기 때문이다. ( 마지막은 검증하지 않으므로 )
+( 하지만, 난 모든 코드를 밑과 똑같이 작성했다. - Enum을 사용하거나 변경에 민감한 코드가 아니라면, 굳이 모든 로직 처리 + throw 문이 필요할까? )
+
+### Enum을 사용하기
+
+위의 내용에서 조금더 깊게 들어가는 것이다
+이미 Enum 사용기는 현 인프런 CTO인 향로님이 자세히 작성했다.
+[Java Enum 활용기](https://techblog.woowahan.com/2527/)
+나는 좀더 초보적이고, 실수 방지를 위해 설명한다
+
+Enum은 결국 하나의 범주라고 생각한다.
+위에서 SPECIAL, NORMAL 같은 등급들이 다르게 분리가 될 필요가 있을까?
+`CustomerRate.SPECIAL` , `CustomerRate.NORMAL` 이 더 자연스럽지 않을까?
+
+위 코드를 Enum 과 같이 사용한다면?
+```java
+public static CustomerRate findRate(final int amount) {  
+    for (CustomerRate customerRate : CustomerRate.values()) {  
+        if (amount >= customerRate.amount) {  
+            return customerRate;  
+        }  
+    }  
+    throw new UnsupportedOperationException("");  
+}
+```
+
+이렇게 비즈니스 로직 레이어에서 불필요한 if문을 반복할 필요가 없을뿐더러 Enum에서, 정의한 순서대로 로직을 수행할 수 있다.
+
+```java
+return switch(customerRate){
+	case VIP: ...;
+	case SPECIAL: ...;
+	case NORMAL: ...;
+}
+```
+만약 해당 부분에서, 등급이 추가되어도 컴파일 오류가 잡아준다
+
+근데 여기서 드는 궁금함으로
+```java
+VIP(15000,(purchaseMoney) -> purchaseMoney * 0.07),
+public double getBonus(final int amount) {  
+    return this.calculateBonusFunction.apply(amount);  
+}
+```
+이렇게, Enum에 함수형을 넣는건 어떨까? 라고 생각할 수 있다
+
+나도 되게 좋다고 생각했는데
+코치의 의견으로는 모든 Enum 과 모든 로직에 함수형을 넣을게 아니라면, 상수만 가지고 외부에서 로직을 수행하는 방향으로 할 거 같다고 말해줬다.
+( 컨벤션 통일 )
+
+```java
+double bonusMoney = customerRate.getBonus(5000);
+===
+double bonusMoney = customerRate.bonusRate * purchaseMoney; 
+```
+=> 해당 부분은 trade-off 인거 같다.
+( 수학적 계산 같은건 Enum이 가지고 있는것두 OK - Enum 이 해야하는 명확한 로직이므로 )
+
+### 삼항 연산자 사용하지 않기
+
+솔직히, 아직 왜 사용하지 않아야 정확하게 모르겠다.
+물론 중첩된(nested) 곳은 피해야 하는게 맞다고 생각하나, 단순 `if xx ? true : false`  이런 코드는 사용해도 괜찮지 않을까?
+
+삼항 연산자도 if 문에 괄호를 추가하라는 것,else 사용하지 말라는 것과 비슷한 맥락인거 같다.
+-> 중첩되거나 실수를 할 부분이 많아지므로
+
+찬성파로
+[삼항연산자의 멋짐을 모르는 당신이 불쌍해](https://tpgns.github.io/2018/04/24/nested-ternaries-are-great/#%EB%B6%80%EC%88%98%ED%9A%A8%EA%B3%BC-%EB%B0%8F-%EB%B0%94%EB%80%94-%EC%88%98-%EC%9E%88%EB%8A%94-%EA%B3%B5%EC%9C%A0%EB%B3%80%EC%88%98)
+해당 글이 있었다.
+( 자바스크립트의 관점이긴 하나, 맥락은 같다 )
+
+- 성능상 차이는 없다 - 변경시, 대부분 if문이나 삼항이나 동일하게 변경
+- if문은 불필요한 부수효과를 발생시키고, 변수를 변경시킬 여지 존재
+
+함수형 프로그래밍을 사용하며, final 에 대해서 의식을 하게 된 부분처럼 ( java 에서 stream 내부에서는 final 값만 접근이 가능하다 )
+-> 삼항 연산자를 사용하여, 변수의 값을 변경시키는 side-effect 를 방지할 수 있다
+
+=> 결국, 컨벤션에 따라서 선택을 할 수는 있을거 같다.
+
+### 결론
+
+단순히 생각하면, 그냥 if문에 괄호 안써도 되는거 아냐? else 문 써도 되는거 아냐?? 등등 생각할 수 있다
+
+하지만, 개인 프로젝트가 아닌 협업을 하는 입장에서 남들의 실수를 줄여나가는게 중요한거 같다.
+나는 당연히, 이렇게 사용하는데? 가 아닌 컨벤션을 서로 맞추어 나가자
+
+추가로, 정적인 코드가 아닌, 동적인 코드의 관점에서 생각하자.
+비즈니스 로직이 변경하거나 -> 코드가 변경되거나 & 추가되는 경우를 생각할때
+실수를 줄이거나, 방지할 수 있는 코드를 작성해나가자!
+
+처음 말한거처럼
+`더러운 냄새를 풍기는 코드가 나 좀 고쳐 달라고 저절로 모습을 드러내는 코딩 표준을 만드는 경지에 이른 단계입니다.` 
+를 잘 생각하며 코드를 작성하자!

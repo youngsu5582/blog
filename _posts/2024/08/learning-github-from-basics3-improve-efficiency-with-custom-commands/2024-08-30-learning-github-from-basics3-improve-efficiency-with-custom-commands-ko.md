@@ -1,0 +1,207 @@
+---
+title: "깃허브 기초부터 시작하기(3) - 커스텀 명령어를 통해 효율성 향상하기"
+author: 이영수
+date: 2024-08-30T03:38:15.216Z
+tags: ['git', '깃', '깃허브', '우테코']
+categories: ['깃허브']
+description: 1초를 감소시킬 수 있는 커스텀 명령어들
+image:
+  path: https://velog.velcdn.com/images/dragonsu/post/b881b89c-bae0-4165-93e6-09357e7ce87d/image.png
+lang: ko
+permalink: /posts/learning-github-from-basics3-improve-efficiency-with-custom-commands
+---
+해당 내용은 프로젝트에서 효율성을 위해 사용할 만한 명령어들로 구성이 되어 있습니다.  
+혹시, 잘못된 내용이나 추가할만한 명령어가 있다면 댓글로 또는 `joyson5582@gmail.com`로 남겨주세요!
+
+이 내용은 [앞 내용](https://velog.velio.com/dragonsu/%EA%B9%83%ED%97%88%EB%B8%8C-%EA%B8%B0%EC%B4%88%EB%B6%80%ED%84%B0-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B02-%EB%AA%85%EB%A0%B9%EC%96%B4-%EC%B0%A8%EA%B7%BC%EC%B0%A8%EA%B7%BC-%EC%A0%95%EB%A6%AC%ED%95%98%EA%B8%B0)에서부터 이어진다.
+### 깃 커스텀 명령어 생성하기
+
+아래, 설명하기 전 깃에서 커스텀 명령어를 만들수 있는 방법에 대해 설명하겠다.
+
+```
+git config --global alias.st "status"
+```
+
+이와 같이 명령어로도 지정할 수 있고
+
+```
+[alias]
+	st = status
+```
+
+첫번째에서 말한 git 파일에서 직접 지정할 수도 있다.
+
+## Git Log 사용하기
+
+![550](https://i.imgur.com/7UuJuJ1.png)
+
+`git log` 호출시 자세하긴 하나, 요약하거나 유의미한 값을 볼 수 없다.
+
+```
+git log --pretty=format:'%C(blue)%h %C(black)%s %C(magenta)(%cr)%C(bold green) %an'
+```
+
+이때 이런 명령어를 실행하면?
+
+![](https://i.imgur.com/hxWQNLU.png)
+
+이와 같이, 간결하게 나타낸다.
+
+옵션들을 설명하면
+`%C(<color>)` : 색깔을 지정한다.
+`%h` : 짧은 커밋 해시값 ( `%H` 는 긴 해시값 )
+`%s` : 커밋 메시지 제목
+`%an` : 작성자의 이름  ( 이때, 우리 프로젝트는 `github-action` 이 자동으로 생성해주기에 저렇게 뜬다. )
+`%cr`: 커밋 시점 (상대적 시간)
+이렇게 구성되어 있다.
+( 다양한, 속성들이 있으므로 자신이 어떻게 필요에 따라 로그를 출력해낼수 있음 - [git log pretty format](https://git-scm.com/docs/git-log#_pretty_formats) 참고 )
+
+그러면, 위의 `깃 커스텀 명령어 생성하기`에 참고해
+`git config --global alias.l "log --pretty=format:'%C(blue)%h %C(black)%s %C(magenta)(%cr)%C(bold green) %an'"
+`l` 입력시 위 명령어로 되게 했다.
+
+여기서 해당 명령어들을 좀더 전문적으로 사용해보자.
+
+`git l -p backend/src/main/java/corea/feedback/controller/UserFeedbackControllerSpecification.java`
+
+해당 파일이 변경된 커밋들을 가져온다. ( `-p` 바뀐 본문도 포함 )
+
+`git l -S '@Profile("dev")'`
+
+파일 중, `@Profile("dev")` 라는 변경사항이 발생한 커밋들을 가져온다.
+
+`git l --author="youngsu5582`
+
+커밋 작성자가 youngsu5582 커밋들을 가져온다.
+
+이렇게, 커스텀 명령어를 기반으로 깔끔하게 추가 검색을 할 수 있다.
+
+```
+reverse = "!f() { 
+	if [ -z \"$1\" ]; then 
+		l --reverse -n 4
+	else 
+		l --reverse -n ${1}
+	fi; 
+	unset -f f;
+}; f"
+```
+
+추가로, `!f()` 와 같은걸 통해서 함수를 실행할 수도 있다.
+매개변수를 없으면?(if문) -> 반대로 4개를 출력
+매개변수가 있으면?(else문) -> 개수만큼 출력
+
+![](https://i.imgur.com/hUmdHaF.png)
+
+이와 같은 매개변수를 추가로 입력하게 하는 것도 가능하다.
+## 브랜치가 없으면 생성 / 브랜치가 있으면 이동
+일반적으로
+브랜치를 생성하려면?
+-> `git checkout -b XXX`, `git switch -c XXX`
+브랜치를 이동하려면?
+-> `git checkout XXX`, `git switch XXX` 
+와 같이 수행한다.
+
+ >checkout 과 switch 의 차이점?
+ >
+ >checkout 은 브랜치 전환, 커밋 체크아웃(돌아가기) 등 다양한 용도로 사용한다.
+ >switch 는 오직 브랜치 전환만 가능하다.
+ >-> 왠만하면 switch 를 사용하자. 
+ 
+그리고, 이미 존재하는 브랜치를 생성하려고 하면?
+`fatal: a branch named 'be_dev_deploy' already exists` 이와 같이 이미 존재한다고 경고한다.
+
+이미 존재하는지 헷갈리거나, 굳이 그런거에 상관없이 이동하고 싶다는 불편함을 느껴봤을것이다. ( 나는 일단 느꼈다 ㅇ.ㅇ.. )
+
+ ```
+ sw = "!f() { 
+		if git show-ref --verify --quiet refs.heads/$1; then 
+		   git switch $1; 
+		else 
+		 git switch -c $1; 
+		fi; 
+		unset -f f;
+	}; f"
+```
+
+위 명령어를 통해 실행할 시, 있으면 이동 + 없으면 생성해서 이동한다. 
+`git show-ref --verify --quiet refs/heads/XXX` 명령어가 어떻게 감지를 해주는 걸까
+- `git show-ref` 
+GPT 는 `저장소에 모든 참조를 보여준다` 라고 되어 있는데
+쉽게 설명해서 그냥 저장소에 관련된 정보들의 포인터를 보여준다고 생각하면 편하다.
+```
+git show-ref
+ec3c0af519649fc8175a18719f11094d1f4582c0 refs/heads/be_dev_deploy
+3922afc79a6a8fd1eedc0e34b9f1979af5abf7f4 refs/heads/develop
+931a51c702a464494c36252d65f9935ff2b3370f refs/heads/feat/#302
+e74920a56c5a86769aaf7239d88181680308a5b refs/remotes/origin/test_deploy
+689e0178030b56439bb1d152ae992fcb5622f2a4 refs/stash
+87c30e5bdd46f5d2a337ba2d019c5200740d40e3 refs/tags/v1.0.0
+```
+이렇게 브랜치,리모트에 존재하는 브랜치, 태그 등을 알려준다. 
+`--verify` 를 통해 없으면 `fatal` 을 발생, `quiet` 를 통해 결과값을 발생시키지 않는다.
+
+> 결과값을 발생 안시키는데 어떻게 감지를해?
+> if 문 내에서 수행되는 명령어는 상태코드를 반환하게 되어있다. 
+> 성공시 0, 실패시 1
+> -> `fatal` 은 1을 반환한다.
+
+### refs/heads
+refs/heads 가 뭘까?
+말 그대로, 브랜치가 저장이 되어 있는 브랜치이다. 
+우리가, 직접 확인할 수도 있다.
+`cd .git/refs/heads` 처럼
+
+![](https://i.imgur.com/lk6XMAA.png)
+
+![](https://i.imgur.com/P0gsoTg.png)
+
+이와 같이 `/` 를 구분으로 폴더가 생성되어 있다. (`feat/#311` -> `feat` + `#311` )
+이 파일들은 우리가 직접 보거나 건들수 없다.
+`show-ref `나 `update-ref` 를 통해 작업이 가능하다. ( 우리가 커밋을 푸시하거나,받아오면 이 값들이 변경되는 것 )
+
+결론적으로
+브랜치가 있으면 이동, 브랜치가 없으면 생성이 되게 된다!
+
+## 편의성 명령어
+나머지로, 더 찾아봤으나 엄청나게 획기적이다는 느껴지지 않고 편해지는 명령어들이였다.
+인텔리제이 단축키의 느낌이랄까?
+
+```
+l = log --pretty=format:'%C(blue)%h %C(black)%s %C(magenta)(%cr)%C(bold green) %an'
+last = "l -1 HEAD"
+s = "status"
+b = "branch -v"
+ob = "branch -rv"
+delete = "branch -D"
+undo = "reset --soft HEAD~1"
+ps = push origin HEAD
+head = rev-parse --abbrev-ref HEAD
+rbd = git pull origin develop --rebase
+
+reverse = "!f() { 
+                if [ -z \"$1\" ]; then 
+                 git l --reverse -n 4; 
+                else 
+                 git l --reverse -n ${1}; 
+                fi; 
+                unset -f f; 
+         }; f"
+
+sw = "!f() { 
+			if git show-ref --verify --quiet refs.heads/$1; then 
+			   git switch $1; 
+			else 
+			 git switch -c $1; 
+			fi; 
+			unset -f f;
+		}; f"
+```
+
+이정도가 될거같다.
+매우 하찮기도 하지만, 0.1초의 반복도 줄일수 있다면 유의미한거 아닐까..
+
+다양한 명령어들이 가능할 것이다. ( 추가 매개변수를 받는것도 가능하고, 함수 실행도 가능하니 )
+각자 프로젝트에서 팀원들이 편리함을 느낄 만한 요소들을 만들어서 전파해보는 것도 좋을거 같다.
+
+```

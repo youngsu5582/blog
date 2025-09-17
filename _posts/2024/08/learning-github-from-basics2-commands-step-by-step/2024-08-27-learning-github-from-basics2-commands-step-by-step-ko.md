@@ -1,0 +1,266 @@
+---
+title: "깃허브 기초부터 시작하기(2) - 명령어 차근차근 정리하기"
+author: 이영수
+date: 2024-08-27T16:16:27.226Z
+tags: ['git', '깃', '깃허브', '우테코']
+categories: ['깃허브']
+description: 프로젝트 중에 사용하는 깃허브 명령어 총 정리
+image:
+  path: https://velog.velcdn.com/images/dragonsu/post/a745151a-3664-4abe-89e1-91abbdfd9753/image.png
+lang: ko
+permalink: /posts/learning-github-from-basics2-commands-step-by-step
+---
+해당 내용은 프로젝트에서 사용할 만한 명령어들로 구성이 되어 있습니다.
+혹시, 잘못된 내용이나 추가해야하는 명령어가 있다면 댓글로 또는 `joyson5582@gmail.com`로 남겨주세요! 
+
+여전히 참고한 내용이다.
+- [왕초보를 위한 Git 명령어 모음집 (1)](https://prgms.tistory.com/220)
+- [왕초보를 위한 Git 명령어 모음집 (2)](https://prgms.tistory.com/221)
+- [Git, GitHub 명령어 사용 꿀팁](https://prgms.tistory.com/217)
+
+### Git Config
+
+1. git config --list 
+
+config 의 목록을 출력한다. ( `--global` , `--local` , `--system` 을 추가해서 각 범위에 조회 )
+
+2. git config --get XXX
+
+특정 config 만 가져온다.
+
+3. git config `[Scope]` `key` `value`
+
+특정 config 를 설정한다.
+
+4. git config `[Scope]` --unset `key`
+
+특정 config 를 제거한다.
+
+### Git Init / Clone
+
+- git init : 아직 버전 관리를 시작하지 않은 디렉토리를 Git 저장소로 만든다.
+
+있을시? -> `Reinitialized existing Git repository` 와 같이 재설치한다. ( 기존 데이터를 유지하나, 일부 설정 파일들은 초기화 될 수 있다 )
+
+- git clone : 이미 존재하는 원격 저장소를 로컬 저장소로 복제한다.
+	- `-o` `<name>`:  받아오는 원격 저장소 명을 origin 이 아닌 name 으로 지정
+	- `-b` `<branch-name>` : 특정 브랜치를 기반으로 복제
+
+### Git remote
+
+1. git remote add/remove XXX
+
+로컬 저장소에서 원격 저장소 참조를 추가/삭제 한다.
+
+2. git remote rename old new
+
+원격 저장소 명을 변경한다.
+
+3. git remote -v show `<remote명>`
+
+remote 의 상태를 출력한다.
+
+```
+* remote upstream
+  Fetch URL: https://github.com/youngsu5582/project-test.git
+  Push  URL: https://github.com/youngsu5582/project-test.git
+  HEAD branch: main
+  Remote branches:
+    1-issue-assgin tracked
+    develop        tracked
+    feat/#145      tracked
+```
+
+와 같은식
+### Git Push
+
+1. git push -u `<remote명>` `<branch명>` : 로컬 브랜치를 원격 브랜치에 연결
+
+2. git push -f `<remote명>` `<branch명>` : 원격 브랜치의 변경 사항을 강제로 덮어씀
+	( git push --force-with-lease : 원격 브랜치가 예상대로 변경되지 않았을 때만 허용 )
+
+3. git push `<remote명>` --delete `<branch명>` 원격 저장소에서 브랜치를 삭제한다.
+
+4. git push --dry-run  `<remote명>` `<bracnh명>` : 변경 사항을 실제 적용하지 않고, 어떤 작업이 수행될지 미리 확인
+( 새로운 브랜치가 생성되는지, 어떤 커밋 해시를 남기는지 등을 알려줌 )
+
+### Git Fetch,Pull
+Git Fetch 는 다소 생소할 수 있다.
+fetch 는 원격 저장소의 변경 사항을 가져온다.
+
+git fetch 를 통해 병합이나 푸시하기 전 충돌을 방지할 수 있다고 한다.
+어떻게..?
+
+1. git fetch -> git log origin/feat#XXX
+
+시, 원격에 어떻게 올라가있는지 확인할 수 있다.
+
+2. git fetch --prune
+
+원격 저장소에 존재하지 않는 브랜치들을 삭제한다.
+( 로컬에 남아있는 불필요한 브랜치들 삭제 )
+
+3. git pull `<remote명>` `<branch명>`
+
+git pull 은 git fetch + git merge 가 합쳐진 것이다.
+이때 되면, merge 와 rebase 의 차이점도 궁금할 것이다.
+#### Git Merge
+두 개의 브랜치를 하나의 브랜치로 합치는 것이다.
+병합 대상 브랜치의 커밋들을 현재 브랜치에 통합해 병합 커밋 생성
+( 우리가 흔히, git pull origin develop 시 나오는 커밋 메시지가 이 git pull origin XXX 때문에 발생한다. )
+
+![](https://i.imgur.com/ebG87OR.png)
+
+사진과 같이 동작한다. ( 그렇기에 우리가 흔히 올리는 것도 Pull Request 역시도 - `git pull(fetch + merge) 를 요청한다.` 의 의미 )
+굳이 작업 브랜치에서 git pull origin xxx 을 해야하는 상황이 아니라면 하지 않는게 좋은거 같다.
+#### Git Rebase
+하나의 브랜치 커밋들은 다른 브랜치 최신 커밋 위에 다시 적용하는 방식
+히스토리가 직선형으로 유지 된다.
+
+![](https://i.imgur.com/i3BsMhn.png)
+
+이게 좋은것만은 아닌게, 병합이나 브랜치를 파서 작업한 이력이 사라진다.
+
+단순히 pull 만 하지말고, rebase 를 해야하는 경우도 맞쳐서 사용하자.
+## 작업 폴더
+깃허브는 로컬 저장소 파일들을 세 가지 단계로 나눠서 관리한다.
+
+- 작업 폴더 : 로컬 저장소의 실제 파일들이 저장되는 디렉토리
+- 스테이지 : 커밋할 파일들을 추가하는 공간
+- .git 디렉토리 : 커밋이 완료후, 스냅샷 저장되는 공간
+
+이러한 단계를 기반으로 깃허브는 우리가 여러 브랜치에서 작업을 해도, 이전 파일로 되돌리고 싶으면
+언제든 되돌아가게 해준다.
+### Git Add / Git Restore
+
+IDEA 가 너무 편하게 해줘서 git add 와 git restore 의 존재에 대해서 잘 모르지만, 이 역시도 중요한 명령어다.
+
+- git add : 스테이지 폴더로 이동한다.
+- git restore  : 현재 작업 공간에서 작업한 것을 제거한다. ( 즉, 작업한 내용을 되돌림 )
+- git restore --staged : 스테이지 폴더에서 제거한다.
+### Git Status
+현재 버전 관리 상태를 보여준다.
+이때, 기존에 깃의 관리에 들어가있는 파일이 수정되었을 경우 `modified`, 깃의 관리가 들어가있지 않은 파일은 `Untracked files` 로 나타난다.
+
+관리 되지 않은 파일을 `git add ...` 을 통해 추가하면? -> `new file` 로 나타난다.
+새로 추가된 파일을 `git restore --staged ...` 를 통해 제거하면? -> new file 에서 다시 제거가 된다.
+
+```
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   sample
+        modified:   src/main/java/corea/DataInitializer.java
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+  (commit or discard the untracked or modified content in submodules)
+        modified:   src/main/resources/config (modified content)
+```
+
+`Changes to be committed` 가 스테이지 공간 
+`Changes not staged for commit` 가 현재 작업 공간의 느낌이다. ( 엄연히는 조금 다름 - 기존에 커밋이 된 파일은 깃허브 관리하에 있으나, 작업 변화는 작업 폴더에서 담당 )
+( 그래서, `git restore` , `git restore --staged` 는 엄연히 다른 것이다. )
+### Git Reset
+커밋한 내용을 취소한다.
+
+1. git reset `<target-commit>`
+
+현재, 프로젝트를 `target-commit` 의 스냅샷 상태로 변경한다.
+
+2. git reset `<mode>` `<target-commit>`
+
+현재, 프로젝트를 `mode` 에 맞게 스냅샷 상태로 변경한다.
+
+- soft : 현재 커밋에 변경된 내용들을 스테이지 단계
+- mixed : 현재 커밋 변경된 내용을 작업 폴더 단계
+- hard  : 현재 커밋 변경된 내용을 완전히 삭제
+
+쉽게 생각해서, 되돌리는 버전까지 있던 값들을 어떤 단계로 돌리냐이다.
+
+`<target-commit>` 에는 HEAD~n 도 들어갈 수 있는데 `HEAD` 는 부모 커밋을 의미한다.
+-> `HEAD~2` 는 HEAD 의 부모 부모 커밋 - 두 단계 이전 커밋
+![500](https://i.imgur.com/IsolMA5.png)
+( 그림이 너무 깔끔해서 굳이 직접 작성할 필요가 없었다. )
+### Git Stash
+작업 도중, 커밋을 하지 않고 작업들을 임시 저장한다.
+( 브랜치에서 작업하다가, 다른 브랜치의 작업을 할때 충돌 발생시, 이슈를 만들기 전 작업을 하다가 이슈 만들어져서 거기에 넣을때 )
+
+스택 구조를 가지고 있다.
+
+- git stash apply 
+
+가장 최근에 저장된 stash 를 적용한다.
+
+- git stash apply stash `stash@{x}` 
+
+특정 stash 를 적용한다.
+
+- git stash --include-untracked
+
+깃이 아직 추적하지 않는 파일들도 stash 를 같이 적용한다.
+
+- git stash list
+
+stash 목록을 본다.
+
+- git stash pop
+
+지정된 stash를 적용하고, 목록에서 제거한다. ( 말했듯이 스택 구조이므로 pop , apply 는 stash 를 제거하지 않는다. )
+### Git Commit
+.git 디렉토리에 저장되는 단위를 지정한다.
+
+- git commit
+
+파일 에디터로 들어가서, 커밋을 작성한다.
+
+- git commit -m `<message>`
+
+커밋을 메시지를 통해 작성한다.
+
+- git commit --amend
+
+현재 스테이징 값을 기존 커밋에 추가한다.
+
+- git commit --allow empty
+
+스테이징 내 변경된 파일이 없어도 커밋을 작성한다.
+### Git Cherrypick
+
+다른 브랜치에서 일부 커밋만 가져온다.
+쉽다면 정말 한없이 쉽고, 어렵다면 한없이 어렵다.
+
+- git cherry-pick `<commit-hash>`
+
+특정 커밋을 가져온다.
+
+- git cherry-pick `<commit-hash1>` `<commit-hash2>`
+
+특정 커밋들을 가져온다.
+
+- git cherry-pick `<시작하는 commit-hash>`..`<끝나는 commit-hash>`
+
+범위를 지정해서 가져온다.
+### Git Log
+
+커밋 기록들을 출력한다.
+
+```
+git log
+commit 354640841119741ad808723eb4818b5740f8d706 (HEAD -> feat/#366)
+Author: youngsu5582 <98307410+youngsu5582@users.noreply.github.com>
+Date:   Fri Aug 23 12:34:03 2024 +0900
+
+    feat: PR 요청 보내는거 임시 주석
+
+commit c152a277ebc5b752a998b35480ee5624ceab7452
+Author: youngsu5582 <98307410+youngsu5582@users.noreply.github.com>
+Date:   Fri Aug 23 12:14:42 2024 +0900
+
+    fix: 멤버 내부로 다시 이동
+```
+
+일반적으로 출력하면 이렇게 나온다.
+이렇게만 보면, 전체를 보기에는 너무 불편하다.
+
+다음 내용에서 좀더 효율적으로 깃허브를 사용하도록 해보자.

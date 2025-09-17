@@ -1,0 +1,157 @@
+---
+title: "모니터링 이동기(1) - 프로메테우스,로키,그라파나들이 뭐지?"
+author: 이영수
+date: 2024-09-08T14:03:03.176Z
+tags: ['그라파나', '로키', '모니터링', '우테코', '프로메테우스']
+categories: ['인프라', '모니터링']
+description: 모니터링 이동기
+image:
+  path: https://velog.velcdn.com/images/dragonsu/post/d85798c5-4329-4b83-a086-ddefb7655bc4/image.png
+lang: ko
+permalink: /posts/monitoring-journey1-what-are-prometheus-loki-grafana
+---
+해당 내용은 프로젝트에서 모니터링을 이동하는 내용으로 구성이 되어 있습니다.  
+혹시, 잘못된 내용이나 추가할만한 명령어가 있다면 댓글로 또는 `joyson5582@gmail.com`로 남겨주세요!
+
+기존에, 3차 데모데이 요구사항에 `(로그, 매트릭) 모니터링 대시보드 구성` 이 있었다.
+이때, 우리는 기능 구현을 위해 시간이 부족한 점 + AWS 에 의존을 한 상태이니 `CloudWatch` 를 사용하기로 했었다.
+그리고, 이에 대한 아쉬운점? 을 느끼고 이동을 했다.
+
+### 기존의 아쉬움
+#### 매번 AWS Console 에 들어가서 확인
+
+이게 생각보다 매우 불편했다.
+AWS 에 들어가기 위해선 로그인 + MFA 인증 코드를 거쳐야 했는데
+가끔씩 로그아웃이 되면, 다시 이 불편한 작업이 반복되어야 했다.
+#### 제공해주는 정보의 빈약성 & 슬랙과 연동성의 어려움
+![](https://i.imgur.com/4CtrMRU.png)
+
+우리가 못 찾은걸수도 있겠지만, 자체 제공해주는 데이터가 빈약했다.
+
+그리고, 우리 자체 AWS 계정이 아니므로 슬랙과 연동할 때 제약이 있었다.
+( `Lambda` 용 Gateway 불가능, IAM 권한 부족 )
+
+#### DB 인스턴스  정보
+
+우리는 금액적인 문제로 RDS 가 아닌 EC2 내부에 자체적으로 DB를 설치해서 사용한다.
+이러면, 필수적인 정보인 QPS,Slow Query,Locking 등을 우리가 직접 받아서 확인하는 식으로 구현을 해야 했다.
+
+---
+
+이런 문제점들 때문에 
+Prometheus + Loki + Grafana 를 쓰기로 결정했다.
+
+## Prometheus
+
+프로메테우스에 뭔지에 대한 설명은 https://prometheus.io/docs/introduction/overview/ 공식문서에 잘 나와있다.
+- CNCF ( Cloud Native Computing Foundations ) 에 속해있는 오픈소스
+- HTTP Request 를 통한 Polling 으로 시계열 데이터를 가져온다.
+- `PromQL` 을 사용한다.
+- 매트릭으로 구성된 다차원 데이터 모델이다.
+
+말들이 꽤나 어렵다.
+
+![](https://i.imgur.com/hbBpmNd.png)
+
+
+여기에, 조금 더 설명이 존재한다.
+
+> 메트릭은 숫자로 표현된 측정값이다.
+> 시계열은 시간이 지남에 따라 변화하는 값을 기록한 것이다.
+
+즉, 
+1.  지속적으로 데이터를 가져와서
+2. 데이터에 라벨링 ( 추가 정보 - 어떤 인스턴스, 언제, 어떤 속성 ) 을 붙히고
+3. 이를 쿼리를 통해 추출해서 사용 / 시각화 한다.
+이런 흐름으로 진행이 된다.
+
+### Polling
+
+그러면, 왜 프로메테우스는 폴링 방식을 쓸까?
+일반적으로, 채팅이나 실시간을 구현해본 사람이라면 `WebSocket` 이나 `Server Send Event` 가 더 좋다는 것을 알것이다. ( 또는 Push 방식이 더 좋지 않나? )
+
+공식적인 답변으로는 [dev 아티클 : 왜 프로메테우스는 pull-based 인가](https://dev.to/mikkergimenez/why-is-prometheus-pull-based-36k1)
+```
+- 모니터링을 쉽게 시작할 수 있다. ( HTTP 통신이므로 )
+- 타겟이 죽었는지 쉽게 확인할 수 있다.
+- 웹 브라우저를 통해 타겟 상태 역시 직접 확인할 수 있다.
+```
+
+Google Search Labs [why proemetheus polling?](https://www.google.com/search?q=why+proemetheus+polling%3F&sourceid=chrome&ie=UTF-8) 결과로는
+
+```
+- 에이전트 과부하 방지 ( 에이전트가 잘못 되어, 너무 많은 Push 진행 시 과부하 유발 )
+- 에이전트 설치 불필요 ( 따로, 설치를 해줄 필요가 없다. )
+```
+
+이와 같이 용이성과 문제 방지에 초점을 두었다.
+결론적으로 , `최종 사용자나 관리자의 입장에서 풀 방식과 푸시 방식의 차이가 크지 않다.` 의 내용이 공식 답변에 같이 있었다.
+방식은 크게 중요하지 않은듯하다 ㅇ.ㅇ
+
+### Exporter
+
+위에서 용어가 한 번도 나오지 않은 Exporter 는 뭘까?
+용어 그대로 내보내주는(`Exporter`) 프로그램 이다.
+
+클라이언트(WAS,DB) 에 설치해서
+- 클라이언트에서 각종 데이터 수집
+- HTTP 엔드포인트 노출 ( 일반적으로, `/metrics`) 해 프로메테우스가 수집하게 함
+
+[# Exporters and integrations](https://prometheus.io/docs/instrumenting/exporters/)
+
+공식문서에 수많은 Exporter 들이 존재한다.
+`MySql Exporter` , `MongoDB Exporter` 등등부터 `Kafka Exporter` `Jira Exporter` 까지 정말 다양하다.
+우리는, 이 Exporter 를 통해 DB 에서 정보를 가져올 것이다.
+
+## Loki
+
+그러면, 로키는 뭘까?
+로키에 대한 설명도 [Loki Overview](https://grafana.com/docs/loki/latest/get-started/overview/) 공식문서에 잘 나와있다.
+
+- Grafana Labs 에서 개발
+- Prometheus 와 유사하게 설계 - 프로메테우스는 메트릭을 수집, 로키는 로그를 수집
+- 라벨과 메타데이터를 인덱싱해 성능 향상 및 유지 비용 감소
+- 시스템 & 에이전트가 Loki 로 Push 하는 방식
+
+프로메테우스와 다르게 Push 방식인 이유는 내가 생각하기에
+
+- 메트릭은 항상 받아와야 한다. ( 서버가 꺼져있는게 아니라면 )
+- 로그는 발생할때만, 모아서 보내야 한다.
+
+이런 관점에서 방식 두개가 나뉜것 같다.
+
+즉, 발생하는 로그들을 임의 클라이언트가 로키 서버에 보내는 식이다.
+
+> 둘다 엄연히 다른 DataSource 임을 명심하자.
+
+## Grafana
+
+그라파나는 위 두가지 즉, DataSource 에서 받은 데이터들을 기반으로
+시각적으로 보여주는 것이다.
+
+가져올때는 
+
+`sum(rate(http_server_requests_seconds_count{application="$application", instance="$instance"}[1m]))` -  PromQL
+`{app="Corea", level="DEBUG"} - LogQL
+
+처럼 쿼리문을 통해서 가져온다.
+
+---
+
+그렇다. 여기까지가 끝이다!
+이렇게 매우 간단하고, 명확하게 설계가 되어 있다.
+
+그림으로 그리면
+
+![](https://i.imgur.com/FsWeDoe.png)
+
+이와같이 인프라가 구성이 된다.
+그러면, 다음편은 설정 및 설치해서 구성을 하는 법에 대해서 알아보자.
+
+### 참고
+
+[[과제] prometheus와 grafana를 이용한 MySQL 모니터링 구축](https://velog.io/@inhwa1025/%EA%B3%BC%EC%A0%9C-prometheus%EC%99%80-grafana%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-DB-%EB%AA%A8%EB%8B%88%ED%84%B0%EB%A7%81-%EA%B5%AC%EC%B6%95#%EB%B0%B1%EA%B7%B8%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%A1%9C-grafana-%EC%8B%A4%ED%96%88)
+[](https://velog.io/@chch1213/wooteco-6-lv3-monitoring#loki-%EB%A1%9C%EA%B7%B8-%ED%99%95%EC%9D%B8)
+
+
+

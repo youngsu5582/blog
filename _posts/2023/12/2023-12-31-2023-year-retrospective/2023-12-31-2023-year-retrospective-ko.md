@@ -4,6 +4,7 @@ author: 이영수
 date: 2023-12-31T13:09:51.129Z
 lang: ko
 permalink: /posts/2023-retrospective/
+page_id: 2023-retrospective
 tags: ['온보딩', '우테코', '취준생', '회고']
 description: 저의 2023년은 무미건조함에서 나온 New Future 이라고 할 수 있을거 같습니다.4학년이 되며많은 시도 , 취업 준비 , 우테코 까지 남들이 보면 큰 의미가 없을수 있지만제 스스로는 작년보다는 무조건 더 나아간 사람이 된 거 같아 뿌듯합니다.초기에는 , 기존에 
 categories: ['회고', '2023']
