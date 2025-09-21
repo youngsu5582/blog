@@ -1,5 +1,5 @@
 ---
-title: 'Content Negotiation in Spring'
+title: Content Negotiation in Spring
 tags:
   - 스프링
   - 콘텐츠 협상
@@ -12,6 +12,7 @@ author: 이영수
 date: 2025-09-18T15:08:55.877Z
 image:
   path: assets/img/thumbnail/2025-09-18-content-negotiation-in-spring.png
+lang: ko
 ---
 
 ## Content Negotiation
