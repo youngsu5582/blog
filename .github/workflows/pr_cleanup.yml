@@ -25,6 +25,9 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
+            const slugMatch = branchName.match(/^post-\d+-(.*)$/);
+            const slug = slugMatch ? slugMatch[1] : branchName;
+
             // 1. Merge the Pull Request
             core.info(`Attempting to merge PR #${prNumber}...`);
             try {
@@ -32,8 +35,7 @@ jobs:
                 owner,
                 repo,
                 pull_number: prNumber,
-                commit_title: `Merge pull request #${prNumber} from ${branchName}`,
-                commit_message: `Automatically merged by workflow due to 'complete' label.`,
+                commit_title: `feat(blog): '${slug}' 포스트 발행 (#${prNumber})`,
                 merge_method: 'squash' // Or 'merge', 'rebase' - 'squash' is often preferred for clean history
               });
               core.info(`✅ PR #${prNumber} merged successfully.`);
@@ -54,9 +56,9 @@ jobs:
             core.info(`✅ PR #${prNumber} closed.`);
 
             // 3. Extract issue number and close the issue
-            const match = branchName.match(/^issue-(\d+)$/);
-            if (match && match[1]) {
-              const issueNumber = parseInt(match[1], 10);
+            const issueMatch = branchName.match(/^post-(\d+)-/);
+            if (issueMatch && issueMatch[1]) {
+              const issueNumber = parseInt(issueMatch[1], 10);
               core.info(`Found linked issue #${issueNumber} from branch name '${branchName}'. Closing...`);
               await github.rest.issues.update({
                 owner,
