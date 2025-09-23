@@ -199,7 +199,7 @@ async function run() {
 
     tempFilePath = `temp_issue_${issueNumber}.md`
     // frontmatter에 title을 추가하여 임시 파일 생성
-    const tempFileContent = matter.stringify(issueBodyTrimmed, {issueTitle})
+    const tempFileContent = matter.stringify(issueBodyTrimmed, {title: issueTitle})
     fs.writeFileSync(tempFilePath, tempFileContent)
     core.info(`✅ 임시 파일 생성: ${tempFilePath}`)
 
@@ -229,7 +229,7 @@ async function run() {
     }
 
     // Frontmatter에 title, author, date 추가 후 파일 이름 변경
-    frontmatter.title = title
+    frontmatter.title = issueTitle
     frontmatter.author = '이영수'
     frontmatter.date = now
     fs.writeFileSync(tempFilePath,
@@ -256,13 +256,13 @@ async function run() {
     const imagePath = matter(finalFileContent).data.image.path
 
     const {newCommitSha, prUrl} = await commitAndCreatePR(
-      octokit, owner, repo, baseCommitSha, branchName, title,
+      octokit, owner, repo, baseCommitSha, branchName, issueTitle,
       finalFilePath, imagePath, defaultBranch
     )
 
     // 6. 요약 출력
     await writeJobSummary({
-      title,
+      title: issueTitle,
       mdFilePath: finalFilePath,
       imagePath,
       branchName,

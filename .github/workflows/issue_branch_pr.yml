@@ -25,6 +25,7 @@ jobs:
         run: npm install
 
       - name: Run create_branch_and_pr script
+        id: create_files
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,3 +37,51 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ toJson(github.event.issue.body) }}
         run: node ./.github/scripts/create_branch_and_pr.js
+
+      - name: Send Slack Notification
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🎉 새 블로그 포스트 초안이 생성되었습니다."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*이슈 제목:*: ${{ github.event.issue.title }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*브랜치:*: `${{ steps.create_files.outputs.branch_name }}`"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*파일 경로:*: `${{ steps.create_files.outputs.file_path }}`"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ steps.create_files.outputs.pr_url }}|생성된 PR 바로가기>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
