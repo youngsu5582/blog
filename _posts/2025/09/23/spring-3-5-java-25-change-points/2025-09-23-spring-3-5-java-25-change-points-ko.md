@@ -12,6 +12,7 @@ author: 이영수
 date: 2025-09-23T15:35:30.419Z
 image:
   path: assets/img/thumbnail/2025-09-23-spring-3-5-java-25-change-points.png
+lang: ko
 ---
 팀 내 스프링 버전을 3.4로 올라가고, 사이드 프로젝트 3.5 버전으로 진행하는 겸 3.3 에서 3.5 까지 주요 변화점들을 정리해본다.
 
