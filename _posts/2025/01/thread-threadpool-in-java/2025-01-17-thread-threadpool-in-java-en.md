@@ -950,6 +950,4 @@ The key is to remember that you must get a task via `getTask` and be assigned a 
 
 
 The long post is over.
-This was a question that really hit a weak spot during my Toss Bank interview.
-`Why did you think that multiple thread pools are better for performance than a single thread pool?`
 Let's strive to learn the C.S embedded in technology, not just the technology itself.
