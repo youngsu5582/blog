@@ -12,6 +12,7 @@ author: 이영수
 date: 2025-10-07T07:33:12.078Z
 image:
   path: assets/img/thumbnail/2025-10-07-6-months-new-developer-reflection.png
+lang: ko
 ---
 어느새, 신입으로서 6개월이 지났다.
 4월 1일 입사해서 10월까지 정말 빠르게 시간이 흘러갔다... (내 시간은 어디에)
