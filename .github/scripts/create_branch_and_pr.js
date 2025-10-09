@@ -22,8 +22,9 @@ function getEnvVars() {
   const issueTitle = process.env.ISSUE_TITLE
   const issueBody = process.env.ISSUE_BODY
   const token = process.env.GH_PAT || process.env.GITHUB_TOKEN
+  const issueLabelsRaw = process.env.ISSUE_LABELS
 
-  if (!repoFullName || !issueNumber || !issueTitle || !issueBody || !token) {
+  if (!repoFullName || !issueNumber || !issueTitle || !issueBody || !token || !issueLabelsRaw) {
     core.setFailed('Action 실행에 필요한 환경 변수가 누락되었습니다.')
     process.exit(1)
   }
@@ -41,7 +42,8 @@ function getEnvVars() {
     issueNumber,
     issueTitle: decodedTitle,
     issueBody,
-    token
+    token,
+    issueLabels: JSON.parse(issueLabelsRaw)
   }
 }
 
@@ -99,21 +101,25 @@ async function commitAndCreatePR(octokit, owner, repo, baseCommitSha,
   })
   core.info('✅ Markdown Blob 생성 완료')
 
-  const imgBuffer = fs.readFileSync(path.join(process.cwd(), imagePath))
-  const imgBlob = await octokit.git.createBlob(
-    {owner, repo, content: imgBuffer.toString('base64'), encoding: 'base64'})
-  core.info('✅ Image Blob 생성 완료')
+  const tree = [
+    {path: mdFilePath, mode: '100644', type: 'blob', sha: mdBlob.data.sha}
+  ]
+
+  if (imagePath) {
+    const imgBuffer = fs.readFileSync(path.join(process.cwd(), imagePath))
+    const imgBlob = await octokit.git.createBlob(
+      {owner, repo, content: imgBuffer.toString('base64'), encoding: 'base64'})
+    core.info('✅ Image Blob 생성 완료')
+    tree.push({path: imagePath, mode: '100644', type: 'blob', sha: imgBlob.data.sha})
+  }
 
   const {data: baseCommit} = await octokit.git.getCommit(
     {owner, repo, commit_sha: baseCommitSha})
   const {data: newTree} = await octokit.git.createTree({
     owner, repo, base_tree: baseCommit.tree.sha,
-    tree: [
-      {path: mdFilePath, mode: '100644', type: 'blob', sha: mdBlob.data.sha},
-      {path: imagePath, mode: '100644', type: 'blob', sha: imgBlob.data.sha}
-    ]
+    tree
   })
-  core.info('✅ 새 Tree 생성 완료 (Markdown + Image)')
+  core.info(imagePath ? '✅ 새 Tree 생성 완료 (Markdown + Image)' : '✅ 새 Tree 생성 완료 (Markdown only)')
 
   const commitMessage = `post: ${title} 작성`
   const {data: newCommit} = await octokit.git.createCommit({
@@ -137,7 +143,7 @@ async function commitAndCreatePR(octokit, owner, repo, baseCommitSha,
       head: branchName,
       base: defaultBranch,
       title: `[게시글 초안] ${title}`,
-      body: `자동 생성된 PR입니다. 게시글 초안 파일(\\\`${mdFilePath}\\\`)을 확인해주세요.`
+      body: `자동 생성된 PR입니다. 게시글 초안 파일(\\\`${mdFilePath}\\\\)을 확인해주세요.`
     })
     prUrl = pr.html_url
     core.info(`✅ PR 생성 완료: ${prUrl}`)
@@ -170,7 +176,7 @@ async function writeJobSummary({
     ['브랜치', branchName],
     ['커밋', commitSha ? commitSha.slice(0, 7) : '(n/a)'],
     ['Markdown 경로', mdFilePath],
-    ['이미지 경로', imagePath],
+    ['이미지 경로', imagePath || '(생성 안 됨)'],
     ['PR', prUrl ? `[열기](${prUrl})` : '생성 안 됨/이미 존재']
   ])
   .addHeading('🧩 태그', 3)
@@ -192,7 +198,8 @@ async function run() {
       issueNumber,
       issueTitle,
       issueBody,
-      token
+      token,
+      issueLabels
     } = getEnvVars()
     const [owner, repo] = repoFullName.split('/')
     const issueBodyTrimmed = JSON.parse(issueBody).trim()
@@ -238,12 +245,26 @@ async function run() {
     tempFilePath = '' // 임시 파일 경로 초기화 (에러 시 삭제 방지)
     core.info(`✅ 최종 파일로 이름 변경: ${finalFilePath}`)
 
-    // 4. 이미지 생성 스크립트 실행
-    core.info('--- 이미지 생성 스크립트 실행 ---')
-    execSync(
-      `node .github/scripts/generate_image_from_file.js --file=${finalFilePath}`,
-      {stdio: 'inherit', env: process.env})
-    core.info('--- 이미지 생성 완료 ---')
+    // 4. 이미지 생성 스크립트 실행 (조건부)
+    const shouldGenerateImage = issueLabels.some(label => label.name === 'thumbnail');
+    let imagePath = null;
+
+    if (shouldGenerateImage) {
+      core.info('--- "thumbnail" 라벨이 있어 이미지 생성 스크립트를 실행합니다 ---');
+      execSync(
+        `node .github/scripts/generate_image_from_file.js --file=${finalFilePath}`,
+        {stdio: 'inherit', env: process.env}
+      );
+      core.info('--- 이미지 생성 완료 ---');
+
+      const updatedFileContent = fs.readFileSync(finalFilePath, 'utf-8');
+      imagePath = matter(updatedFileContent).data.image?.path;
+      if (!imagePath) {
+          core.warning('이미지 생성 스크립트가 실행되었지만 frontmatter에서 이미지 경로를 찾을 수 없습니다.');
+      }
+    } else {
+      core.info('--- "thumbnail" 라벨이 없어 이미지 생성을 건너뜁니다 ---');
+    }
 
     // 5. Git 작업 및 PR 생성
     const {octokit} = initClients(token)
@@ -251,9 +272,6 @@ async function run() {
     const branchName = `post-${issueNumber}-${slug}`
     const {baseCommitSha} = await ensureBranch(octokit, owner, repo,
       defaultBranch, branchName)
-
-    const finalFileContent = fs.readFileSync(finalFilePath, 'utf-8')
-    const imagePath = matter(finalFileContent).data.image.path
 
     const {newCommitSha, prUrl} = await commitAndCreatePR(
       octokit, owner, repo, baseCommitSha, branchName, issueTitle,
@@ -264,7 +282,7 @@ async function run() {
     await writeJobSummary({
       title: issueTitle,
       mdFilePath: finalFilePath,
-      imagePath,
+      imagePath, // imagePath는 null이거나 실제 경로일 수 있습니다.
       branchName,
       commitSha: newCommitSha,
       prUrl

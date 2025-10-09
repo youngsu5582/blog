@@ -1,0 +1,84 @@
+name: Generate Thumbnail on PR
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: write # To commit changes back to the branch
+  pull-requests: write # To comment on the PR
+
+jobs:
+  generate-thumbnail:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'thumbnail' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Check out the head of the PR
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GH_PAT }} # Use PAT to be able to push to the branch
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Find Markdown file in PR
+        id: find_file
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const mdFile = files.find(f => f.filename.startsWith('_posts/') && f.filename.endsWith('.md'));
+            if (!mdFile) {
+              core.setFailed('No markdown file found in _posts directory in this PR.');
+              return;
+            }
+            core.setOutput('file_path', mdFile.filename);
+            return `Found file: ${mdFile.filename}`;
+
+      - name: Generate Thumbnail Image
+        run: node .github/scripts/generate_image_from_file.js --file=${{ steps.find_file.outputs.file_path }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_FLASH_IMAGE_URL: ${{ secrets.GEMINI_FLASH_IMAGE_URL }}
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat: generate thumbnail image"
+          branch: ${{ github.head_ref }}
+      
+      - name: Post comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ AI 썸네일 이미지가 생성되어 브랜치에 커밋되었습니다.'
+            });
+
+      - name: Remove thumbnail label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              name: 'thumbnail'
+            });

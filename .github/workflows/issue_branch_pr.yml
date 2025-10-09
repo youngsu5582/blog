@@ -36,6 +36,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ toJson(github.event.issue.body) }}
+          ISSUE_LABELS: ${{ toJson(github.event.issue.labels) }}
         run: node ./.github/scripts/create_branch_and_pr.js
 
       - name: Send Slack Notification
