@@ -12,6 +12,7 @@ author: 이영수
 date: 2025-10-09T04:38:20.279Z
 image:
   path: assets/img/thumbnail/2025-10-09-cli-tool-introduction-zshrc.png
+lang: ko
 ---
 개발자는 수많은 명령어들을 입력하게 된다.
 GIT 부터 시작해서, SSH 로 서버 접속 이라든가, AWS 작업을 한다던가, DB 작업을 한다던가 등등
