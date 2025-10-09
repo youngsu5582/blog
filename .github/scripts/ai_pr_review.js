@@ -1,4 +1,4 @@
-// ─────────── .github/scripts/ai_pr_review.js ───────────
+// ─────────── .github/scripts/ai_pr_review.js 
 // 이 파일은 ESM(ES Modules) 환경을 전제합니다.
 // package.json에 "type": "module" 이 반드시 있어야 합니다.
 
@@ -32,7 +32,6 @@ async function run() {
       pull_number: Number(prNumber),
     })
     const headSha = prInfo.head.sha
-    // ex) headSha = "d86a7692bd2c65ade20d9216c9c74abab047f11d"
 
     // ─── 4) PR의 변경된 파일 목록 조회 ────────────────────────────────────────────────
     const {data: files} = await octokit.pulls.listFiles({
@@ -50,16 +49,12 @@ async function run() {
       return
     }
 
-    // ────────────────────────────────────────────────────────────────────────────────
-    // “하나의 Review” 로 묶을 모든 코멘트(제안 + 평가)를 모을 배열
     const commentsToAdd = []
-    // ────────────────────────────────────────────────────────────────────────────────
 
-    // ─── 6) 각 Markdown 파일별로 AI 리뷰 요청 ─────────────────────────────────────────
+    // ─── 6) 각 Markdown 파일별로 AI 리뷰 요청 (단일 호출로 통합) ─────────────────────
     for (const file of mdFiles) {
-      const filePath = file.filename // 예: "content/example-post.md"
+      const filePath = file.filename
 
-      // 6-1) “HEAD 커밋” 기준으로 파일 전체 내용 가져오기
       const {data: fileContent} = await octokit.repos.getContent({
         owner,
         repo,
@@ -67,159 +62,114 @@ async function run() {
         ref: headSha,
       })
 
-      // 6-2) base64 디코딩
       const decodedContent = Buffer.from(
         fileContent.content,
         'base64'
       ).toString('utf-8')
       const lines = decodedContent.split('\n')
 
-      // ─── (A) 코드 Suggestion 요청 처리 ──────────────────────────────────────────────
-
-      // 6-A-1) AI에게 보낼 “라인 번호 | 텍스트” 형태의 프롬프트 생성
       const promptLines = lines
       .map((line, idx) => `${idx + 1} | ${line}`)
       .join('\n')
 
-      // 6-A-2) ChatGPT에게 “diff 추천”을 요청하는 시스템 메시지
-      const systemMessageForDiff = `
-You are a senior technical writer AND code refactoring assistant.
-아래 Markdown 파일(또는 코드 스니펫)을 줄 단위로 읽고, 기술적 정확성·문법·표현·구조·가독성 등을 기준으로
-부족하거나 개선할 부분이 있다면, “라인 번호 | 기존 코드 → 제안된 수정 코드” 형태로만 응답하세요.
-예시:
-10 | String foo = "bar"; → String foo = getFoo();
-이 때 “기존 코드”와 “제안된 수정 코드” 사이에 반드시 “→” 기호를 넣어 주세요.
+      const systemMessage = `
+  당신은 명확하고 깊이 있는 기술 아티클을 작성하는 것으로 유명한 시니어 개발자이자 전문가 테크 블로거입니다. 당신의 역할은 주니어 개발자가 작성한 블로그 글을 리뷰하며 그가 더
+  나은 기술 필자로 성장할 수 있도록 멘토링하는 것입니다.
+
+  아래 Markdown 형식의 글을 읽고, 다음 기준들을 종합적으로 고려하여 리뷰를 제공해 주세요.
+
+  [리뷰 기준]
+   1. 기술적 깊이와 정확성: 설명하는 기술적 내용이 정확한가? 독자에게 충분한 깊이의 정보를 제공하는가, 혹은 너무 피상적인가?
+   2. 설명의 명확성: 핵심 개념과 주장이 독자(예: 주니어 개발자)가 이해하기 쉽게 작성되었는가? 사용된 비유나 예시는 효과적인가?
+   3. 글의 구조와 흐름: 도입부가 문제를 잘 제시하고, 본문이 논리적으로 전개되며, 결론이 핵심을 잘 요약하는가?
+   4. 코드 예제의 품질: 글에 포함된 코드 예제가 명확하고, 내용과 관련성이 높으며, 모범 사례를 따르는가?
+   5. 독창성 및 설득력: 저자만의 관점이나 경험이 잘 드러나는가? 글의 주장이 설득력이 있는가?
+
+  [응답 형식]
+  리뷰는 아래 두 가지 형식 중 하나를 선택하여 응답해 주세요.
+
+   1. 문장 수정: 문법, 오타, 더 나은 표현 등 간단한 문장 수정이 필요한 경우
+       * 형식: [문장 수정] {라인 번호} | {기존 문장} → {제안된 수정 문장}
+       * 예시: [문장 수정] 10 | 그것은 매우 빠르게 동작합니다. → 그 기능은 빠른 속도로 동작합니다.
+
+   2. 내용 제안: 기술적 깊이, 설명 방식, 구조, 예제 등 설명이 필요한 내용에 대한 종합적인 의견 제시
+       * 형식: [내용 제안] {라인 번호 또는 문단 범위} | {의견 및 제안}
+       * 예시: [내용 제안] 15-20 | '메모리 관리'에 대한 설명이 조금 추상적입니다. 독자들이 개념을 쉽게 이해할 수 있도록, 가비지 컬렉션의 간단한 동작 방식을 코드 예시와 함께
+         보여주는 문단을 추가하면 글의 깊이가 더해질 것 같습니다.
       `
-      const userMessageForDiff = `
+      const userMessage = `
 파일 경로: ${filePath}
 
 라인 번호 | 텍스트 명단:
-\`\`\`
+\`\`\
 ${promptLines}
-\`\`\`
+\`\`\
       `
 
-      // 6-A-3) OpenAI ChatCompletion 호출 (Suggestion 용)
-      const completionForDiff = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          {role: 'system', content: systemMessageForDiff},
-          {role: 'user', content: userMessageForDiff},
+          {role: 'system', content: systemMessage},
+          {role: 'user', content: userMessage},
         ],
-        temperature: 0.3,
-        max_tokens: 1000,
+        temperature: 0.4,
+        max_tokens: 1500,
       })
 
-      // 6-A-4) AI 응답 추출 (예: "10 | String foo = \"bar\"; → String foo = getFoo();\n…")
-      const aiDiffResponse = completionForDiff.choices[0]?.message?.content?.trim()
-        || ''
+      const aiResponse = completion.choices[0]?.message?.content?.trim() || ''
 
-      // 6-A-5) AI 응답 파싱: “라인 번호 | 기존 → 수정” → 배열 of { lineNumber, original, suggestion }
-      const rawDiffLines = aiDiffResponse.split('\n')
-      const parsedDiffEntries = rawDiffLines
-      .map((line) => {
-        // “10 | String foo = \"bar\"; → String foo = getFoo();”
-        const parts = line.split('|').map((p) => p.trim())
-        const lineNumber = parseInt(parts[0], 10)
-        // parts[1] = 'String foo = "bar"; → String foo = getFoo();'
-        const diffParts = parts[1]?.split('→').map((p) => p.trim()) || []
-        const original = diffParts[0] || ''
-        const suggestion = diffParts[1] || ''
-        return {lineNumber, original, suggestion}
-      })
-      .filter(
-        (entry) =>
-          !isNaN(entry.lineNumber) &&
-          entry.original.length > 0 &&
-          entry.suggestion.length > 0
-      )
+      // =======================================================================
+      // 요청에 따라 AI의 원본 응답을 로그로 출력
+      core.info(`\n===== AI Raw Response for ${filePath} =====\n${aiResponse}\n==============================================\n`)
+      // =======================================================================
 
-      // 6-A-6) Suggestion 블록 생성 및 commentsToAdd에 누적
-      if (parsedDiffEntries.length > 0) {
-        for (const entry of parsedDiffEntries) {
-          const suggestionBlock = [
-            '```suggestion',
-            `${entry.suggestion}`,
-            '```',
-          ].join('\n')
+      const rawLines = aiResponse.split('\n')
+      const suggestionRegex = /.*\[문장 수정\]\s*(\d+)\s*\|\s*(.+?)→(.+)/ // Modified regex to be more robust
+      const opinionRegex = /.*\[내용 제안\]\s*([\d-]+)\s*\|\s*(.+)/ // Modified regex to be more robust
 
+      for (const line of rawLines) {
+        const suggestionMatch = line.match(suggestionRegex)
+        if (suggestionMatch) {
+          const [, lineNumber, , suggestion] = suggestionMatch
           commentsToAdd.push({
             path: filePath,
-            line: entry.lineNumber,
+            line: parseInt(lineNumber, 10),
             side: 'RIGHT',
-            body: suggestionBlock,
+            body: `\`\`\`suggestion\n${suggestion.trim()}\n\`\`\``,
+          })
+          continue
+        }
+
+        const opinionMatch = line.match(opinionRegex)
+        if (opinionMatch) {
+          const [, lineRange, body] = opinionMatch
+          // Extract the last number from the line range for the 'line' property
+          const line = parseInt(lineRange.split('-').pop(), 10)
+          commentsToAdd.push({
+            path: filePath,
+            line: line,
+            side: 'RIGHT',
+            body: body.trim(),
           })
         }
-        core.info(
-          `✅ ${filePath}에 대해 ${parsedDiffEntries.length}개의 코드 Suggestion을 준비했습니다.`
-        )
-      } else {
-        core.info(`AI가 ${filePath}에 대해 코드 Suggestion을 제공하지 않았습니다.`)
       }
-
-      // ─── (B) 작성 글 평가 요청 처리 ─────────────────────────────────────────────────
-
-      // 6-B-1) ChatGPT에게 “글 평가”를 요청하는 시스템 메시지
-      const systemMessageForReview = `
-You are a senior technical writer and editor.
-아래 Markdown 파일(전체 내용)을 읽고, **내용의 충실도, 제목과의 연관성, 글의 흐름, 가독성** 등 관점에서
-종합적으로 평가하여 간결하고 구체적인 피드백을 주세요.
-특히 “무엇이 잘 쓰여 있고, 무엇이 부족하며, 어떻게 개선하면 좋을지”를 포함하세요.
-      `
-      const userMessageForReview = `
-파일 경로: ${filePath}
-
-아래는 해당 Markdown 파일의 전체 내용입니다.
-\`\`\`
-${decodedContent}
-\`\`\`
-      `
-
-      // 6-B-2) OpenAI ChatCompletion 호출 (Review 평가용)
-      const completionForReview = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {role: 'system', content: systemMessageForReview},
-          {role: 'user', content: userMessageForReview},
-        ],
-        temperature: 0.6,
-        max_tokens: 1000,
-      })
-
-      // 6-B-3) AI 평가 응답 추출 (자연어 텍스트)
-      const aiReviewResponse =
-        completionForReview.choices[0]?.message?.content?.trim() || ''
-
-      if (aiReviewResponse.length > 0) {
-        // 작성된 글 평가는 “파일의 첫 번째 줄(line: 1)에” 일반 코멘트 형태로 달겠습니다.
-        commentsToAdd.push({
-          path: filePath,
-          line: 1,       // 파일 맨 위(1번 줄)에 평가 코멘트를 남깁니다.
-          side: 'RIGHT', // 항상 변경된 HEAD 기준
-          body: aiReviewResponse,
-        })
-        core.info(`✅ ${filePath}에 대해 종합 리뷰(글 평가)를 준비했습니다.`)
-      } else {
-        core.info(`AI가 ${filePath}에 대해 글 평가를 제공하지 않았습니다.`)
-      }
+      core.info(`✅ ${filePath}에 대한 AI 리뷰 처리를 완료했습니다.`)
     }
 
-    // ────────────────────────────────────────────────────────────────────────────────
-    // ▶ 하나의 Review로 묶어서 업로드
+    // ─── 7) 수집된 모든 코멘트를 하나의 리뷰로 제출 ───────────────────────────────
     if (commentsToAdd.length > 0) {
       await octokit.pulls.createReview({
         owner,
         repo,
         pull_number: Number(prNumber),
         commit_id: headSha,
-        body: commentsToAdd[commentsToAdd.length - 1].body,
+        body: 'AI 리뷰가 완료되었습니다. 아래 코멘트를 확인해주세요.',
         event: 'COMMENT',
-        comments: commentsToAdd.slice(0, commentsToAdd.length - 1),
+        comments: commentsToAdd,
       })
-
-      core.info(`🎉 총 ${commentsToAdd.length}개의 코멘트(제안 + 평가)를 하나의 리뷰로 생성했습니다.`)
+      core.info(`🎉 총 ${commentsToAdd.length}개의 코멘트를 하나의 리뷰로 생성했습니다.`)
     } else {
-      core.info('남은 리뷰 코멘트가 없어 별도 리뷰를 생성하지 않습니다.')
+      core.info('AI가 리뷰할 내용을 찾지 못했습니다.')
     }
   } catch (error) {
     core.setFailed(`오류 발생: ${error.message}`)
