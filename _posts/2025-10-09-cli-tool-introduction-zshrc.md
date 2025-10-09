@@ -1,44 +1,45 @@
 ---
-title: '개발자의 1초,1분,1시간을 단축시키는 CLI (1) - zshrc, cli tool 소개'
+title: '개발자의 1초, 1분, 1시간을 단축시키는 CLI (1) - zshrc 및 cli tool 소개'
 tags:
   - CLI
   - 개발도구
   - zsh
   - 효율성
-description: 개발자가 CLI를 통해 작업 효율성을 높일 수 있는 방법과 유용한 도구들을 소개합니다.
+description: 개발자가 CLI를 통해 작업 효율성을 높이는 방법과 유용한 도구들을 소개합니다.
 page_id: cli-tool-introduction-zshrc
 permalink: /posts/cli-tool-introduction-zshrc/
 author: 이영수
 date: 2025-10-09T04:38:20.279Z
 ---
 개발자는 수많은 명령어들을 입력하게 된다.
-GIT 부터 시작해서, SSH 로 서버 접속 이라든가, AWS 작업을 한다던가, DB 작업을 한다던가 등등등
+GIT 부터 시작해서, SSH 로 서버 접속 이라든가, AWS 작업을 한다던가, DB 작업을 한다던가 등등
 
-근데 이런걸 매번 입력하는건 너무 귀찮을 뿐 더러 어려울 수 있다.
-쉘 스크립트에 명령어를 만들어 관리해서 시간을 단축시켜 나가보자.
-추가로, 여러 CLI tool 들도 같이 소개 할 예정이다. ( 진짜 매우매우 유용한게 많다! )
+근데 이런걸 매번 입력하는건 너무 귀찮을 뿐 더러 외우기에는 어려울 수 있다.
+CLI 를 통해 반복적인 작업을 자동화하면 개발자는 더 중요한 작업에 집중할 수 있다.
 
-> 나는 zsh + oh my zsh + Warp Terminal를 사용해서 홈 디렉토리의 zsh 폴더에서 설정을 했다.
-> 크게 설정이 달라지지 않으니 적절히 변환해서 참고하면 될 거 같다.
+이번 내용은 zshrc 에 대한 설명 및 여러 CLI tool 들도 같이 소개 할 예정이다. ( 진짜 매우매우 유용한게 많다! )
+
+> 나는 zsh + oh my zsh + Warp Terminal 를 사용해서 홈 디렉토리의 zsh 폴더에서 설정을 했다.
+> 크게 설정이 달라지지 않으니 적절히 참고하면 될 거 같다.
 
 zsh, oh my zsh 설치 및 소개에 대한 내용은 다른 블로그들에도 잘 되어있으므로 생략한다! 🫡
 
 [.bashrc와 .zshrc를 활용한 터미널 환경 최적화 완벽 가이드](https://notavoid.tistory.com/161)
 [My .zshrc Zsh Configuration, Annotated](https://olets.dev/posts/my-zshrc-zsh-configuration-annotated/)
+[Zsh 및 oh my zsh 설치](https://blackinkgj.github.io/zsh-installation/)
+등을 참고하면 좋을거 같다.
 
-를 참고하면 좋을거 같다.
 ## zshrc
 
 zsh + rc ( run command ) 로
 터미널이 시작될 때마다 자동으로 실행되는 설정 파일이다.
-
 일반적으로 우리 홈 디렉토리에 `.zshrc` 형태로 존재할 것이다.
 
-우리는 해당 파일에 `환경변수`, `Alias`, `함수`, `setopt` 를 정의할 수 있다.
+우리는 해당 파일에 `환경 변수`, `Alias`, `함수`, `setopt`를 정의할 수 있다.
 
 ```sh
 export PATH="$HOME/bin:$PATH"
-export GEMINI_API_KEY={API_KEY}
+export GEMINI_API_KEY={API_KEY}
 
 alias obsidian='cd /Users/iyeongsu/Desktop/obsidian'
 alias blog='cd ~/Documents/GitHub/blog/'
@@ -64,16 +65,17 @@ setopt PUSHD_SILENT
 우리는 명령어를 사용할 때 가끔씩 ENV 에 특정 값을 설정해줘야 할 필요가 있다.
 (GEMINI-CLI 를 사용하려 할 때, ENV 에 있는 GEMINI_API_KEY 를 사용한다던가)
 
-매번, 특정 터미널에서 `export GEMINI_API_KEY={API_KEY}` 를 입력하고 실행하는건 매우 불편할 것이다.
-export 를 zshrc 에 넣어서 우리는 환경변수를 매번 기억할 필요 없이, 칠 필요 없이 사용할 수 있다.
+이런 환경변수들을 통해 외부에 노출하지 않고, 중요한 값들을 설정해서 사용할 수 있다.
+
+하지만, 매번 특정 터미널에서 `export GEMINI_API_KEY={API_KEY}` 를 입력하고 실행하는 것은 매우 불편할 것이다.
+`export` 를 zshrc 에 넣으면 우리는 환경 변수를 매번 기억하거나 입력할 필요 없이, 칠 필요 없이 사용할 수 있다.
 
 ### alias
 
-는 의미 그대로 별칭이다.
-우리가 입력하는 불필요한 명령어 전문을 간단하게 해준다.
+이는 의미 그대로 별칭이다.
+alias 를 사용하면 긴 명령어를 짧게 줄일 수 있어서 편리하다.
 
 `cd ~/Documents/GitHub/blog/` -> `blog`
-
 `gemini` -> `g`
 
 와 같이 간편하게 사용 가능하다.
@@ -83,19 +85,22 @@ export 를 zshrc 에 넣어서 우리는 환경변수를 매번 기억할 필요
 우리의 귀찮은 작업들을 간편하게 해주는 포인트
 alias 만으로는 한계가 발생한다.
 
-예를 들어? 
+예를 들어?
 `폴더를 선택하고 -> 거기서 추가적인 작업을 하고 싶다던가`
 `AWS Log 를 바로 가져와서 파일에 저장하게 한다던가`
 
-등등등
-이런 복잡한 요소들을 함수로 작성할 수 있다.
+등등
+이런 복잡한 요소들을 함수로 작성할 수 있다. (함수 예시에 대해선 다음 게시물에서 다룰 예정이다!)
+
 ### key binds
 
-키보드 단축키를 zsh 에 매핑 시켜준다.
-`bindkey -s '^h' 'history\n'` 는 Ctrl + h 를 누르면, history 라는 명령어를 실행 시켜주게 키를 매핑 하는 것이다.
+키보드 단축키를 zsh 에 매핑한다.
+`bindkey -s '^h' 'history\n'` 는 Ctrl + h 를 누르면, history 라는 명령어를 실행하도록 매핑 한다는 의미이다.
+
+키 바인딩을 통해 자주 사용하는 명령어를 단축키로 실행해 작업 속도를 높일수도 있다.
 
 >키보드 단축키를 좋아하는 사람이라면, 괜찮을거 같다...?
- 나는 별칭으로 줄이고 직접 치는게 더 익숙한 거 같아서 주로 그렇게 사용한다.
+나는 별칭으로 짧게 줄이고 직접 치는게 더 익숙한 거 같아서 주로 그렇게 사용한다.
 
 ### setopt
 
@@ -103,11 +108,11 @@ zsh 에서 제공해주는 일종의 세팅이다.
 zsh 의 다양한 기능을 켜고,끄게 해준다.
 
 - setopt ... : 특정 옵션 켜는 역할
-- unsetpot ... : 특정 옵션 끄는 역할
+- unsetopt ... : 특정 옵션 끄는 역할
 
 [Options](https://zsh.sourceforge.io/Doc/Release/Options.html)
 
-다양한 옵션들이 있으니 참고하면 좋을거 같다.
+다양한 옵션이 있으니 참고하면 좋을거 같다.
 예시로,
 
 ```
@@ -124,8 +129,8 @@ setopt AUTO_CD
 
 ### source
 
-위의 요소들을 다 추가하면, 하나의 zshrc 1000 라인씩 넘어가서 관리가 어려울 것이다.
-그때, 각 파일들을 분리해서 불러올 수 있다.
+위의 요소들을 모두 추가하면 하나의 zshrc 파일이 1000 라인씩 넘어가서 관리가 어려울 수 있다.
+그때, 각 기능별 또는 설정등으로 파일을 분리해서 관리할 수 있다.
 
 ```sh
 # ~/.zshrc
@@ -163,7 +168,6 @@ echo -e "${C_YELLOW}--- Zsh configuration loaded ---${C_RESET}"
 ```
 
 폴더에 있는 요소들을 가져와서 zsh 에 로드해준다.
-설정과 폴더들을 적절히 분리하고, 파일명으로 명확히 분리해서 관리가 쉽다.
 
 ![](https://i.imgur.com/dx47ziy.png)
 
@@ -172,7 +176,7 @@ echo -e "${C_YELLOW}--- Zsh configuration loaded ---${C_RESET}"
 ## 추천하는 CLI Tool
 
 > 해당 내용은 백엔드 개발자 위주이나, 충분히 다른 개발자들에게도 유용할 거 같다...?
->  p.s 정리하고 보니, 왜이렇게 많지.. 
+>  p.s 정리하고 보니, 왜이렇게 많지..
 
 아래 있는 요소들에 대한 간략적 목록
 
@@ -196,7 +200,7 @@ tldr 은 바로 사용할 수 있는 간단한 명령어 샘플들을 모아서 
 
 ![](https://i.imgur.com/xOsDdzf.png)
 
-없다면, 
+없다면,
 
 ```
 This page doesn't exist yet!
@@ -242,10 +246,10 @@ grep 을 대체한다. grep 보다 더 빠르고, 편의적 기능을 제공한�
 추가로, fd 와 동일하게 `.gitignore` 를 존중한다.
 
 - rg -l "import" -t js : js 파일중 import 를 포함한 파일명 검색
-(`find . -name "*.js" -print0 | xargs -0 grep -n "import"` : 기존은 상당히 복잡하다)
+  (`find . -name "*.js" -print0 | xargs -0 grep -n "import"` : 기존은 상당히 복잡하다)
 
 - `rg "my_function"` : 현재 디렉토리에 재귀적으로 검색
-(`grep -r -n --color=auto "my_function" .` : rg 는 기본적으로 재귀 + line number 를 제공한다)
+  (`grep -r -n --color=auto "my_function" .` : rg 는 기본적으로 재귀 + line number 를 제공한다)
 
 ### bat
 
@@ -378,12 +382,12 @@ aws 의 대부분 기능들을 CLI 에서 할 수 있게 해준다.
 s3 파일 다운로드, ec2 조회, ec2 조회, dynamodb, cloudwatch 등 안되는건 없다.
 
 - `aws ec2 describe-instances --filters "Name=tag:Name,Values=*Value*" "Name=instance-state-name,Values=running"` :
-`*Value*` 라는 name 을 가지고 + ec2 의 상태를 running 인 ec2 의 상태를 조회
+  `*Value*` 라는 name 을 가지고 + ec2 의 상태를 running 인 ec2 의 상태를 조회
 
 - `aws s3 cp "s3://$bucket/$object_key" "./$filename"` : s3 에 있는 파일을 로컬 폴더에 복사
 
 - `aws logs filter-log-events --log-group-name "$log_group" --start-time "$start_time" --end-time "$end_time"` :
-log group 이름에 맞는 + 시작 시간부터, 종료 시간까지 로그를 조회
+  log group 이름에 맞는 + 시작 시간부터, 종료 시간까지 로그를 조회
 
 ### lazydocker
 
@@ -397,7 +401,7 @@ x 를 입력하면 제공해주는 메뉴들 덕분에 관리가 용이하다.
 ![](https://i.imgur.com/m7MjJIL.png)
 
 키보드로 remove, restart 등등등 모든것들이 가능하다.
-해당 요소는 정말 강추한다! ⭐
+해당 CLI tool 은 정말 강추한다! ⭐
 
 ### neovim & lazyvim
 
@@ -482,12 +486,14 @@ stash 를 관리할 수 있는데
 - 검색어에 맞게 적절히 필터링 해서 보여준다 ( 매우 빠름, 지금은 너무 간단해서 티가 안남 )
 - preview 를 통해 오른쪽에 미리 요소들을 보여준다
 - 선택 하면, a,p,d 키를 통해 apply, pop, drop 등을 가능하다
-
 와 같이 기존에서 훨씬 업그레이드 된 방법으로 관리할 수 있다.
+
+이렇게 fzf 를 통해 쉽게 검색하고 관리해, 복잡한 작업을 더 간편하게 수행할 수 있게 해준다.
 
 - `fzf --reverse` : 목록 순서를 뒤집어서 표시
 - `fzf --query="youngsu5582"` : 검색창에 미리 입력될 초기 검색어
-- `fzf --preview=git stash show -p {1} | bat --color=always` : 
-현재 선택된 항목에 대한 미리보기 제공, 지금은 선택된 커밋을 show 로 보여주고 -> bat 을 통해 이쁘게 보여주게 설정
+- `fzf --preview=git stash show -p {1} | bat --color=always` :
+  현재 선택된 항목에 대한 미리보기 제공, 지금은 선택된 커밋을 show 로 보여주고 -> bat 을 통해 이쁘게 보여주게 설정
+
 
 이 fzf 를 통해 어떻게 관리를 할 수 있는지에 대해선 다음 게시글에서 다뤄보자 🙂
