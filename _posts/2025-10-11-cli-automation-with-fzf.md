@@ -10,6 +10,8 @@ page_id: cli-automation-with-fzf
 permalink: /posts/cli-automation-with-fzf/
 author: 이영수
 date: 2025-10-11T16:14:30.261Z
+image:
+  path: assets/img/thumbnail/2025-10-11-cli-automation-with-fzf.png
 ---
 
 이번 내용 부터는 fzf 를 통해 어떻게 반복적인 작업을 자동화 할 수 있는지 살펴보자.
