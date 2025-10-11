@@ -45,6 +45,7 @@ jobs:
         with:
           payload: |
             {
+              "text": "🎉 새 블로그 포스트 초안 생성: ${{ github.event.issue.title }}",
               "blocks": [
                 {
                   "type": "header",

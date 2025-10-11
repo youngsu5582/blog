@@ -83,3 +83,51 @@ jobs:
             } catch (error) {
               core.error(`Failed to delete branch '${branchName}'. It might have been already deleted. Error: ${error.message}`);
             }
+
+      - name: Send Slack Notification on Success
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "✅ PR이 병합되고 브랜치가 삭제되었습니다: ${{ github.event.pull_request.title }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "✅ PR 병합 및 정리 완료" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": "*PR 제목:*\n<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>" }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack Notification on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "❌ PR 병합/정리 작업에 실패했습니다: ${{ github.event.pull_request.title }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "❌ PR 병합/정리 작업 실패" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": "*PR 제목:*\n<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>" }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    { "type": "mrkdwn", "text": "자세한 내용은 Actions 로그를 확인해주세요: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow Run>" }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
