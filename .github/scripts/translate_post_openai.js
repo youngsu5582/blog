@@ -35,7 +35,7 @@ async function main() {
     messages: [
       {
         role: 'system',
-        content: 'You are a professional translator. Translate the following markdown blog post from Korean to English. Maintain the original markdown formatting, including frontmatter, code blocks, and links. Only output the translated text, with no additional commentary or explanations.'
+        content: 'You are a professional translator. Translate the following markdown blog post from Korean to English. Maintain the original markdown formatting, including frontmatter, code blocks, and links. In the YAML frontmatter, quote all string values with double quotes (") and NEVER with single quotes (\'). Only output the translated text, with no additional commentary or explanations.'
       },
       {
         role: 'user',
@@ -46,8 +46,35 @@ async function main() {
 
   const translation = response.choices[0].message.content.trim();
 
+  // --- Fix: frontmatter의 작은따옴표 값을 큰따옴표로 교체 (title: 'Developer's ...' 같은 경우 방지)
+  function fixFrontmatterQuotes(md) {
+    const m = md.match(/^---\n([\s\S]*?)\n---\n?/);
+    if (!m) return md; // frontmatter 없음
+    let fm = m[1];
+    // key: '...'(단일 라인) 형태만 안전하게 변환. 내부의 " 는 이스케이프
+    fm = fm.replace(
+      /^(\s*[A-Za-z0-9_-]+:\s*)'(.*)'(\s*)$/gm,
+      (_full, key, val, tail) => `${key}"${val.replace(/"/g, '\\"')}"${tail}`
+    );
+    return `---
+${fm}
+---
+` + md.slice(m[0].length);
+  }
+  const safeTranslation = fixFrontmatterQuotes(translation);
+
+  let translatedMatter;
+  try {
+    translatedMatter = matter(safeTranslation);
+  } catch (e) {
+    // 만약 예외가 나면, 원문 frontmatter를 유지하고 본문만 번역본으로 쓰는 안전장치
+    console.warn('Warning: Failed to parse translated frontmatter. Falling back to original frontmatter.', e.message);
+    const orig = matter(originalContent);
+    const translatedBody = safeTranslation.replace(/^---[\s\S]*?---\n?/, '');
+    translatedMatter = { data: orig.data, content: translatedBody };
+  }
+
   // 2. Create the new English file with 'lang: en'
-  const translatedMatter = matter(translation);
   translatedMatter.data.lang = 'en';
   translatedMatter.data.author = 'Lee Youngsu'; // Set English author
 
