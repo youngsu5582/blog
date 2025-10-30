@@ -1,5 +1,7 @@
 # 이영수 기술 블로그
 
+[English](./README.en.md)
+
 [![Blog-Post](https://github.com/youngsu5582/blog/actions/workflows/issue_branch_pr.yml/badge.svg)](https://github.com/youngsu5582/blog/actions/workflows/issue_branch_pr.yml)
 [![Deploy-Pages](https://github.com/youngsu5582/blog/actions/workflows/pages-deploy.yml/badge.svg)](https://github.com/youngsu5582/blog/actions/workflows/pages-deploy.yml)
 
