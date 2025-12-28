@@ -11,10 +11,6 @@ permalink: /posts/youthcon-presentation-reflections/
 author: 이영수
 date: 2025-12-28T13:52:24.247Z
 ---
-## 📋 초안 제목
-유스콘 발표를 마치고(1) - 타임라인과 느낀점
-
-## 📝 초안 내용 (Markdown)
 유스콘 발표를 마쳤다.
 - [참고 링크](https://frost-witch-afb.notion.site/YOUTHCON-25-2d1ff80c22ae81afbfbfc1b3f3b2bb18)
 
@@ -241,5 +237,4 @@ date: 2025-12-28T13:52:24.247Z
 
 다음 내용은 받은 피드백들과 발표를 준비하며 느낀점들을 기반으로 발표를 잘 준비하는 방법에 대해 작성해보려고 한다.
 
----
-> **Note:** AI 썸네일 생성을 원하시면 이 이슈에 `thumbnail` 라벨을 추가해주세요.
+- [Hands-on-lab Repository Link](https://github.com/youngsu5582/fzf-hands-on-lab-repository)
