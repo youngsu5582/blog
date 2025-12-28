@@ -12,6 +12,7 @@ author: 이영수
 image:
   path: assets/img/thumbnail/2025-12-28-youthcon-presentation-reflections.png
 date: 2025-12-28T13:52:24.247Z
+lang: ko
 ---
 유스콘 발표를 마쳤다.
 - [참고 링크](https://frost-witch-afb.notion.site/YOUTHCON-25-2d1ff80c22ae81afbfbfc1b3f3b2bb18)
