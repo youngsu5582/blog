@@ -1,0 +1,11 @@
+{% comment %}
+  Renders the short description shown in post lists.
+  Prefers the explicit `post.description`, otherwise falls back to a cleaned excerpt.
+{% endcomment %}
+{% if post.description %}
+  {{ post.description }}
+{% elsif post.excerpt %}
+  {{ post.excerpt | strip_html | truncate: 200 }}
+{% else %}
+  {{ post.content | strip_html | truncate: 200 }}
+{% endif %}
