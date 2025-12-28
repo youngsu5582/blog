@@ -9,6 +9,8 @@ description: '유스콘 발표를 마친 후의 경험과 느낀 점을 공유�
 page_id: youthcon-presentation-reflections
 permalink: /posts/youthcon-presentation-reflections/
 author: 이영수
+image:
+  path: assets/img/thumbnail/2025-12-28-youthcon-presentation-reflections.png
 date: 2025-12-28T13:52:24.247Z
 ---
 유스콘 발표를 마쳤다.
