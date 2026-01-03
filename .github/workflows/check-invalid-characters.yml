@@ -25,11 +25,6 @@ jobs:
           echo "🔍 백스페이스 문자(\x08) 검사 시작..."
 
           # 백스페이스 문자를 포함한 파일 찾기
-          # -r: 재귀 검색
-          # -l: 파일 이름만 출력
-          # -P: Perl 정규표현식 사용
-          # \x08: 백스페이스 문자
-
           FOUND_FILES=$(grep -rlP '\x08' _posts/ en/_posts/ 2>/dev/null || true)
 
           if [ -n "$FOUND_FILES" ]; then
@@ -39,22 +34,41 @@ jobs:
             echo "$FOUND_FILES"
             echo ""
 
-            # 각 파일의 상세 정보 출력
-            echo "=== 상세 정보 ==="
+            # Slack용 상세 정보 생성
+            DETAILS=""
             while IFS= read -r file; do
               if [ -n "$file" ]; then
-                echo ""
                 echo "📄 파일: $file"
-                # 백스페이스 문자가 있는 줄 번호와 내용 출력
-                grep -nP '\x08' "$file" | head -5 || true
+                DETAILS+="📄 *파일:* \`$file\`\n"
+
+                # 백스페이스 문자가 있는 줄 번호와 내용 추출
+                while IFS=: read -r line_num line_content; do
+                  # 백스페이스 문자를 [BS]로 표시
+                  visible_content=$(echo "$line_content" | sed 's/\x08/[BS]/g')
+                  # 너무 긴 줄은 100자로 제한
+                  if [ ${#visible_content} -gt 100 ]; then
+                    visible_content="${visible_content:0:100}..."
+                  fi
+
+                  echo "   Line $line_num: $visible_content"
+                  DETAILS+="   • Line $line_num: \`$visible_content\`\n"
+                done < <(grep -nP '\x08' "$file" | head -5)
+
+                DETAILS+="\n"
               fi
             done <<< "$FOUND_FILES"
 
+            # 파일 개수 세기
+            FILE_COUNT=$(echo "$FOUND_FILES" | wc -l)
+
             # 결과를 환경 변수로 저장 (Slack 알림용)
             echo "has_backspace=true" >> $GITHUB_OUTPUT
-            echo "files<<EOF" >> $GITHUB_OUTPUT
-            echo "$FOUND_FILES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+            {
+              echo "details<<EOF"
+              echo -e "$DETAILS"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
 
             exit 1
           else
@@ -69,7 +83,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "⚠️ 백스페이스 문자가 발견되었습니다!",
+              "text": "⚠️ 백스페이스 문자가 ${{ steps.check.outputs.file_count }}개 파일에서 발견되었습니다!",
               "blocks": [
                 {
                   "type": "header",
@@ -79,28 +93,41 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*문제:* RSS Feed 빌드에 실패할 수 있는 백스페이스(\\x08) 제어 문자가 발견되었습니다.\n\n*영향:* XML 파싱 에러 및 RSS 수집 실패 가능성"
+                    "text": "🔴 *문제 요약*\nRSS Feed 빌드에 실패할 수 있는 백스페이스(`\\x08`) 제어 문자가 *${{ steps.check.outputs.file_count }}개 파일*에서 발견되었습니다."
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "📋 *상세 정보*\n\n${{ steps.check.outputs.details }}"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🛠️ *해결 방법*\n1. 해당 파일을 에디터로 엽니다\n2. 표시된 라인으로 이동합니다\n3. `[BS]`로 표시된 위치의 공백을 Delete/Backspace로 완전히 지웁니다\n4. 스페이스바로 다시 공백을 입력합니다\n5. 저장하고 커밋합니다"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*문제 파일:*\n```${{ steps.check.outputs.files }}```"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*해결 방법:*\n1. 해당 파일을 에디터로 엽니다\n2. 문제가 있는 공백을 Delete/Backspace로 완전히 지웁니다\n3. 스페이스바로 다시 공백을 입력합니다\n4. 저장하고 커밋합니다"
+                    "text": "⚠️ *영향*\n• XML 파싱 에러\n• RSS 수집 실패\n• `<span class=\"err\"></span>` 태그 생성"
                   }
                 },
                 {
                   "type": "context",
                   "elements": [
-                    { "type": "mrkdwn", "text": "Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" },
-                    { "type": "mrkdwn", "text": "자세한 로그: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow Run>" }
+                    { "type": "mrkdwn", "text": "Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`>" },
+                    { "type": "mrkdwn", "text": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|상세 로그 보기>" }
                   ]
                 }
               ]
