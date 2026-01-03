@@ -1,0 +1,139 @@
+name: 백스페이스 문자 검출
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '_posts/**/*.md'
+      - 'en/_posts/**/*.md'
+  pull_request:
+    paths:
+      - '_posts/**/*.md'
+      - 'en/_posts/**/*.md'
+
+jobs:
+  check-backspace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 백스페이스 문자 검사
+        id: check
+        run: |
+          echo "🔍 백스페이스 문자(\x08) 검사 시작..."
+
+          # 백스페이스 문자를 포함한 파일 찾기
+          # -r: 재귀 검색
+          # -l: 파일 이름만 출력
+          # -P: Perl 정규표현식 사용
+          # \x08: 백스페이스 문자
+
+          FOUND_FILES=$(grep -rlP '\x08' _posts/ en/_posts/ 2>/dev/null || true)
+
+          if [ -n "$FOUND_FILES" ]; then
+            echo "❌ 백스페이스 문자가 발견되었습니다!"
+            echo ""
+            echo "=== 문제가 있는 파일 목록 ==="
+            echo "$FOUND_FILES"
+            echo ""
+
+            # 각 파일의 상세 정보 출력
+            echo "=== 상세 정보 ==="
+            while IFS= read -r file; do
+              if [ -n "$file" ]; then
+                echo ""
+                echo "📄 파일: $file"
+                # 백스페이스 문자가 있는 줄 번호와 내용 출력
+                grep -nP '\x08' "$file" | head -5 || true
+              fi
+            done <<< "$FOUND_FILES"
+
+            # 결과를 환경 변수로 저장 (Slack 알림용)
+            echo "has_backspace=true" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$FOUND_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            exit 1
+          else
+            echo "✅ 백스페이스 문자가 발견되지 않았습니다."
+            echo "has_backspace=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+      - name: Send Slack Notification on Backspace Found
+        if: failure() && steps.check.outputs.has_backspace == 'true'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "⚠️ 백스페이스 문자가 발견되었습니다!",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "⚠️ 백스페이스 문자 검출" }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*문제:* RSS Feed 빌드에 실패할 수 있는 백스페이스(\\x08) 제어 문자가 발견되었습니다.\n\n*영향:* XML 파싱 에러 및 RSS 수집 실패 가능성"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*문제 파일:*\n```${{ steps.check.outputs.files }}```"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*해결 방법:*\n1. 해당 파일을 에디터로 엽니다\n2. 문제가 있는 공백을 Delete/Backspace로 완전히 지웁니다\n3. 스페이스바로 다시 공백을 입력합니다\n4. 저장하고 커밋합니다"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    { "type": "mrkdwn", "text": "Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" },
+                    { "type": "mrkdwn", "text": "자세한 로그: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow Run>" }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack Notification on Success
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "✅ 백스페이스 문자 검사 통과",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "✅ 백스페이스 문자 검사 통과" }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "모든 포스트 파일에서 백스페이스 문자가 발견되지 않았습니다."
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    { "type": "mrkdwn", "text": "Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
