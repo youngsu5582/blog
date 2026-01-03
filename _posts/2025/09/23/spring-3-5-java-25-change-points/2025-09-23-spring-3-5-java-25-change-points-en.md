@@ -269,7 +269,7 @@ The current method is to implement Servlet and Filter, then manage them directly
 
 ```java
 @Order(1)  
-public class BodyFilter implements Filter {
+public class BodyFilter implements Filter {
 	@Override  
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 	...
@@ -300,7 +300,7 @@ However, this too seemed to feel like some kind of inconvenience.
 @Component
 @Order(1)
 @WebFilter(urlPatterns = "/api/")
-public class BodyFilter implements Filter {
+public class BodyFilter implements Filter {
 	@Override  
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 	...

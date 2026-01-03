@@ -269,7 +269,7 @@ MockBean 은 작동 방식이
 
 ```java
 @Order(1)  
-public class BodyFilter implements Filter {
+public class BodyFilter implements Filter {
 	@Override  
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 	...
@@ -300,7 +300,7 @@ Filter 는 스프링 프레임워크 기술이 아닌, 자바 서블릿 표준 �
 @Component
 @Order(1)
 @WebFilter(urlPatterns = "/api/")
-public class BodyFilter implements Filter {
+public class BodyFilter implements Filter {
 	@Override  
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 	...
@@ -443,7 +443,7 @@ ScopedValues 는 ThreadLocal 을 대체하기 위해 나왔다고 한다.
 
 - 메모리 문제 : 수백만 개의 ThreadLocalMap 이 생성된다면..? 어마어마할 것
 - 성능 문제 : 부모 스레드의 값을 상속 받으려면 자식 스레드가 생성될 때마다 부모의 MAP 을 복사해야 한다. - 이 역시도 무시하지 못할 것
-- 데이터 관리 복잡성 : 스레드 풀 환경에서 Thraed Local 사용 후, remove 호출하지 않으면 다른 요청 처리하는 스레드가 이전 요청 데이터를 그대로 사용할 수 있다
+- 데이터 관리 복잡성 : 스레드 풀 환경에서 Thraed Local 사용 후, remove 호출하지 않으면 다른 요청 처리하는 스레드가 이전 요청 데이터를 그대로 사용할 수 있다
 
 코드 스타일은 크게 차이 안나는 것 같다..?
 
@@ -625,7 +625,7 @@ AOT 기반으로 성능 향상을 위해선 런타임에 클래스를 동적으�
 - Compact Object Headers - JEP 519 Final : 64비트 아키텍처에서 Java 객체의 헤더 크기를 줄임
 
 Java 객체는 메모리에 자신을 식별하고 관리하기 위한 정보를 담는 헤더를 가지고 있다.
-헤더에 객체 해시코드, GC 정보, 락 등을 가지고 있다.
+헤더에 객체 해시코드, GC 정보, 락 등을 가지고 있다.
 
 > 이 헤더에 대해 더 알고 싶다면, Java Object Layout 이라는 라이브러리를 사용해서 탐구해볼 것을 추천
 > [알아도 정말 쓸데없는 자바 잡학사전 with JOL](https://youngsu5582.life/posts/useless-java-trivia-with-jol) 이 내용을 참고해도 좋다.

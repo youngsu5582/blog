@@ -249,7 +249,7 @@ grep 을 대체한다. grep 보다 더 빠르고, 편의적 기능을 제공한�
 추가로, fd 와 동일하게 `.gitignore` 를 존중한다.
 
 - rg -l "import" -t js : js 파일중 import 를 포함한 파일명 검색
-  (`find . -name "*.js" -print0 | xargs -0 grep -n "import"` : 기존은 상당히 복잡하다)
+  (`find . -name "*.js" -print0 | xargs -0 grep -n "import"` : 기존은 상당히 복잡하다)
 
 - `rg "my_function"` : 현재 디렉토리에 재귀적으로 검색
   (`grep -r -n --color=auto "my_function" .` : rg 는 기본적으로 재귀 + line number 를 제공한다)

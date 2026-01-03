@@ -1,5 +1,5 @@
 ---
-title: '[Blog Draft] After YouthCon Presentation (1) - Timeline and Reflections'
+title: 'After YouthCon Presentation (1) - Timeline and Reflections'
 tags:
   - Presentation
   - YouthCon

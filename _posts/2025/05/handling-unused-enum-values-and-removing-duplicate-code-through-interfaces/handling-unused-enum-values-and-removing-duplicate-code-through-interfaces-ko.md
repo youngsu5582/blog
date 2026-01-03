@@ -203,7 +203,7 @@ public interface AiApiTypeValidator {
   
     default void validateAiApiType() {  
         if (getAiApiType().isInactive()) {  
-            throw new IllegalArgumentException("비활성화된 API 타입입니다. (AiApiType: %s)".formatted(getAiApiType()));  
+            throw new IllegalArgumentException("비활성화된 API 타입입니다. (AiApiType: %s)".formatted(getAiApiType()));  
         }  
     }  
 }

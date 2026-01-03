@@ -133,7 +133,7 @@ at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestT
 예외 객체와 수집된 `StackTraceElement` 는 곧바로 참조가 끊겨 GC 대상이 된다.
 -> GC 회수가 늘어나며 애플리케이션 전체 응답성 저하
 
-`01:10:27.252 [http-nio-8080-exec-9] [INFO ] [c.m.i.a.t.c.Controller] - StackTrace 길이 : 234`
+`01:10:27.252 [http-nio-8080-exec-9] [INFO ] [c.m.i.a.t.c.Controller] - StackTrace 길이 : 234`
 Spring 로직에서 발생한 예외
 
 ```java
@@ -143,7 +143,7 @@ public void validate() {
 ```
 
 검증 부분에서 예외가 발생하면?
-``01:10:27.252 [http-nio-8080-exec-9] [INFO ] [c.m.i.a.t.c.Controller] - StackTrace 길이 : 234`
+``01:10:27.252 [http-nio-8080-exec-9] [INFO ] [c.m.i.a.t.c.Controller] - StackTrace 길이 : 234`
 Spring AOP 로 인해 어마어마한 스택 트레이스가 생성된다.
 
 좀 더 들어가보자.

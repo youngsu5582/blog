@@ -121,7 +121,7 @@ public ResponseEntity<RequestDto> request(...) {
 ```
 
 특정 칼럼들은 어드민한테만 보여줘야 할 때 사용 가능하다.
-`@JsonView(DtoView.Client.class)`를 선언하면 Client는 역직렬화되지 않는다.
+`@JsonView(DtoView.Client.class)`를 선언하면 Client는 역직렬화되지 않는다.
 
 ### JsonIgnoreProperties
 

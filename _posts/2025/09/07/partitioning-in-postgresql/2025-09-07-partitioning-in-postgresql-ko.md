@@ -173,7 +173,7 @@ GEMINI 의 도움을 받아 2억 4천만 건 정도의 데이터를 삽입했다
 > 5000만개 정도 있고, 실제 작업이 되는 테이블에 생성 및 인덱스 처리하는 작업에는 5분도 걸리더라...
 
 > created_at 에만 인덱스를 거는게 필요한가? 라고 생각했는데
-> 정렬 작업을 해야하는 요구사항이 있다면, 단일 칼럼으로 걸어도 괜찮은거 같다.
+> 정렬 작업을 해야하는 요구사항이 있다면, 단일 칼럼으로 걸어도 괜찮은거 같다.
 > [Is there any benefit to indexing 'created_at' column?](https://laracasts.com/discuss/channels/eloquent/is-there-any-benefit-to-indexing-created-at-column)
 > 해당 내용을 보면, 인덱스가 없는 정렬 과정에서 `Out of sort memory` 가 떴다고 한다.
 > ( 인메모리 정렬 또는 파일 정렬 작업을 수행하기 때문에 )

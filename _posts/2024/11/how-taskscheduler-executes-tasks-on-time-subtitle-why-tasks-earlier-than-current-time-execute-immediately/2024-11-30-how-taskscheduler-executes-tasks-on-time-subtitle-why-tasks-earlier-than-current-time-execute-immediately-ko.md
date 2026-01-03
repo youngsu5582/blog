@@ -102,7 +102,7 @@ public FutureTask(Runnable runnable, V result) {
 상위 클래스에서
 - runnable 을 callable 로 변환
 - 스레드 상태 NEW 로 지정
-  도 추가로 됩니다.
+  도 추가로 됩니다.
 
 해당 클래스는 밑에 `태스크를 실행` 부분에서 좀 더 자세히 다루겠습니다.
 
@@ -525,7 +525,7 @@ private RunnableScheduledFuture<?> finishPoll(RunnableScheduledFuture<?> f) {
 
 ## 결론
 
-이와같은 과정을 거쳐 지정된 시간에 태스크 작업이 수행됩니다.
+이와같은 과정을 거쳐 지정된 시간에 태스크 작업이 수행됩니다.
 
 ![](https://i.imgur.com/t6EWUzT.png)
 
