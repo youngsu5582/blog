@@ -77,14 +77,27 @@ main {
   }
 
   img {
+    width: 100%;
     height: 100%;
     -o-object-fit: cover;
     object-fit: cover;
+    -o-object-position: center;
+    object-position: center;
 
     @extend %rounded;
 
-    @at-root #post-list & {
-      width: 100%;
+  }
+
+  &.book-cover {
+    aspect-ratio: 3 / 2;
+    width: min(100%, 860px);
+    height: auto;
+    max-height: 440px;
+    margin: 1.5rem auto;
+
+    img {
+      object-fit: contain;
+      background: var(--img-bg);
     }
   }
 }
