@@ -11,8 +11,8 @@ permalink: /posts/isms-p-certification-deleted-member-records-issue-review/
 author: 이영수
 date: 2026-01-25T13:24:49.568Z
 ---
-현재, 회사에선 ISMS-P 획득을 위해 다양한 팀들이 부랴부랴 다양한 보안 작업들을 하고 있다.
-그중, 나는 우리 팀이 담당하고 있는 서비스에서 `탈퇴한 회원들의 기록을 처리`하는 이슈를 맡았다.
+현재, 회사에선 ISMS-P 획득을 위해 다양한 팀들이 부랴부랴 다양한 보안 작업들을 하고 있다. 
+그중, 나는 우리 팀이 담당하고 있는 서비스에서 `탈퇴한 회원들의 기록을 처리`하는 이슈를 맡았다.
 
 다른 이슈들도 함께 있었는데, 카프카를 학습할 수 있을 기회라고 생각해서 한다고 했다.
 그렇게, 자신만만하게 시작한 이슈는 생각보다 호락호락하지 않음을 느꼈다...
@@ -372,7 +372,7 @@ private static final String SELECT_CLIENT_OLD_SQL = """
 
 CustomXXXRepository 를 만들어서 외부에선 이전 테이블의 요청인지 모르게 처리했다.
 
-### 다른 기능도 처리가능하게 확장
+### 다른 기능도 처리가능하게 확장
 
 기존에 내가 처리한 것은 `AIGenerate` Feature 였다.
 하지만, PDF 에서 글자, 이미지 등 정보들을 추출해서 제공해주는 서비스도 있었다! 🫠
@@ -494,7 +494,7 @@ public class PdfErasureHandler implements ErasureHandler {
 - [ ] option 에 변수 cf url 만 있는 경우
 - [ ] option 에 bucket, key, cf url 있는 경우
 - [ ] option 에 bucket, key, s3 url 있는 경우
-- [ ] option 에 inputFileList 안에 값들이 있는 경우 - 배열에는 무조건 key, bucket 이 있는걸 보장
+- [ ] option 에 inputFileList 안에 값들이 있는 경우 - 배열에는 무조건 key, bucket 이 있는걸 보장
 
 - [ ] result 에 변수 url 만 있는 경우
 - [ ] result 에 fileList 가 있는 경우
