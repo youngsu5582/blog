@@ -10,8 +10,10 @@ page_id: isms-p-certification-deleted-member-records-issue-review
 permalink: /posts/isms-p-certification-deleted-member-records-issue-review/
 author: 이영수
 image:
-  path: assets/img/thumbnail/2026-01-25-isms-p-certification-deleted-member-records-issue-review.png
+  path: >-
+    assets/img/thumbnail/2026-01-25-isms-p-certification-deleted-member-records-issue-review.png
 date: 2026-01-25T13:24:49.568Z
+lang: ko
 ---
 현재, 우리 회사는 ISMS-P 인증을 획득하기 위해 여러 팀이 바쁘게 다양한 보안 작업들을 하고 있다.
 그중, 나는 우리 팀이 담당하고 있는 서비스에서 `탈퇴한 회원들의 기록을 처리`하는 이슈를 맡았다.
