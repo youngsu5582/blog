@@ -127,13 +127,23 @@ ${promptLines}
       const suggestionRegex = /.*\[문장 수정\]\s*(\d+)\s*\|\s*(.+?)→(.+)/ // Modified regex to be more robust
       const opinionRegex = /.*\[내용 제안\]\s*([\d-]+)\s*\|\s*(.+)/ // Modified regex to be more robust
 
+      const maxLine = lines.length // 파일의 실제 라인 수
+
       for (const line of rawLines) {
         const suggestionMatch = line.match(suggestionRegex)
         if (suggestionMatch) {
           const [, lineNumber, , suggestion] = suggestionMatch
+          let targetLine = parseInt(lineNumber, 10)
+
+          // 라인 번호가 파일 범위를 벗어나면 마지막 라인으로 조정
+          if (targetLine > maxLine) {
+            core.warning(`⚠️ 라인 ${targetLine}이 파일 범위(${maxLine})를 벗어나 마지막 라인으로 조정합니다.`)
+            targetLine = maxLine
+          }
+
           commentsToAdd.push({
             path: filePath,
-            line: parseInt(lineNumber, 10),
+            line: targetLine,
             side: 'RIGHT',
             body: `\`\`\`suggestion\n${suggestion.trim()}\n\`\`\``,
           })
@@ -144,10 +154,17 @@ ${promptLines}
         if (opinionMatch) {
           const [, lineRange, body] = opinionMatch
           // Extract the last number from the line range for the 'line' property
-          const line = parseInt(lineRange.split('-').pop(), 10)
+          let targetLine = parseInt(lineRange.split('-').pop(), 10)
+
+          // 라인 번호가 파일 범위를 벗어나면 마지막 라인으로 조정
+          if (targetLine > maxLine) {
+            core.warning(`⚠️ 라인 ${targetLine}이 파일 범위(${maxLine})를 벗어나 마지막 라인으로 조정합니다.`)
+            targetLine = maxLine
+          }
+
           commentsToAdd.push({
             path: filePath,
-            line: line,
+            line: targetLine,
             side: 'RIGHT',
             body: body.trim(),
           })
