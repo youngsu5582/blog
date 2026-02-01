@@ -12,6 +12,7 @@ author: 이영수
 image:
   path: assets/img/thumbnail/2026-02-01-shell-directly-implement.png
 date: 2026-02-01T06:22:03.291Z
+lang: ko
 ---
 ## 왜 이런걸 하게 되었는가?
 
