@@ -12,6 +12,7 @@ author: 이영수
 image:
   path: assets/img/thumbnail/2026-02-08-ai-agent-hackathon-feat-vibe-coding.png
 date: 2026-02-08T08:31:30.287Z
+lang: ko
 ---
 > 이번에 소규모 해커톤을 갔다와서 간략하게만 적어본다.
 
