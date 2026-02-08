@@ -1,5 +1,5 @@
 module Jekyll
-  class BooksCategoryPage < Page
+  class LibraryCategoryPage < Page
     def initialize(site, base, dir, category, posts)
       @site = site
       @base = base
@@ -11,13 +11,13 @@ module Jekyll
       self.data["title"] = category
       self.data["category"] = category
       self.data["posts"] = posts
-      self.data["collection"] = "books"
+      self.data["collection"] = "library"
       self.data["layout"] = "category"
       self.data["permalink"] = File.join("/", dir, "/")
     end
   end
 
-  class BooksTagPage < Page
+  class LibraryTagPage < Page
     def initialize(site, base, dir, tag, posts)
       @site = site
       @base = base
@@ -29,29 +29,29 @@ module Jekyll
       self.data["title"] = tag
       self.data["tag"] = tag
       self.data["posts"] = posts
-      self.data["collection"] = "books"
+      self.data["collection"] = "library"
       self.data["layout"] = "tag"
       self.data["permalink"] = File.join("/", dir, "/")
     end
   end
 
-  class BooksTaxonomyGenerator < Generator
+  class LibraryTaxonomyGenerator < Generator
     safe true
     priority :low
 
     def generate(site)
-      books = site.collections["books"]&.docs || []
-      return if books.empty?
+      items = site.collections["library"]&.docs || []
+      return if items.empty?
 
-      build_categories(site, books)
-      build_tags(site, books)
+      build_categories(site, items)
+      build_tags(site, items)
     end
 
     private
 
-    def build_categories(site, books)
+    def build_categories(site, items)
       grouped = Hash.new { |h, k| h[k] = [] }
-      books.each do |doc|
+      items.each do |doc|
         Array(doc.data["categories"]).each do |category|
           grouped[category] << doc
         end
@@ -59,14 +59,14 @@ module Jekyll
 
       grouped.each do |category, docs|
         slug = Utils.slugify(category, :mode => "default")
-        dir = File.join("books", "categories", slug)
-        site.pages << BooksCategoryPage.new(site, site.source, dir, category, docs)
+        dir = File.join("library", "categories", slug)
+        site.pages << LibraryCategoryPage.new(site, site.source, dir, category, docs)
       end
     end
 
-    def build_tags(site, books)
+    def build_tags(site, items)
       grouped = Hash.new { |h, k| h[k] = [] }
-      books.each do |doc|
+      items.each do |doc|
         Array(doc.data["tags"]).each do |tag|
           grouped[tag] << doc
         end
@@ -74,8 +74,8 @@ module Jekyll
 
       grouped.each do |tag, docs|
         slug = Utils.slugify(tag, :mode => "default")
-        dir = File.join("books", "tags", slug)
-        site.pages << BooksTagPage.new(site, site.source, dir, tag, docs)
+        dir = File.join("library", "tags", slug)
+        site.pages << LibraryTagPage.new(site, site.source, dir, tag, docs)
       end
     end
   end

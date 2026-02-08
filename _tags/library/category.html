@@ -1,0 +1,14 @@
+---
+layout: page
+permalink: /library/categories/:name/
+---
+
+<h2>{{ page.name }}</h2>
+
+<ul>
+  {% for item in site.library %}
+  {% if item.categories contains page.name %}
+  <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+  {% endif %}
+  {% endfor %}
+</ul>

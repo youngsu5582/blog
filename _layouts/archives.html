@@ -9,9 +9,9 @@ layout: page
 {% assign df_dayjs_m = site.data.locales[lang].df.archives.dayjs | default: '/ MM' %}
 
 {%- comment -%}
-통합 컬렉션: posts + articles + books
+통합 컬렉션: posts + articles + library
 {%- endcomment -%}
-{% assign combined = site.posts | concat: site.articles | concat: site.books %}
+{% assign combined = site.posts | concat: site.articles | concat: site.library %}
 {% assign docs = "" | split: "" %}
 {% for doc in combined %}
   {% if doc.date and doc.hidden != true %}

@@ -95,7 +95,7 @@ collections:
   articles:
     output: true
     sort_by: order
-  books:
+  library:
     output: true
     sort_by: order
 
@@ -136,12 +136,12 @@ defaults:
       permalink: /articles/:title/
   - scope:
       path: "" # An empty string here means all files in the project
-      type: books
+      type: library
     values:
       layout: post
       comments: true # Enable comments in posts.
       toc: true # Display TOC column in posts.
-      permalink: /books/:title/
+      permalink: /library/:title/
 
 sass:
   style: compressed

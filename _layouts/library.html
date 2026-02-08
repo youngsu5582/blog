@@ -1,0 +1,157 @@
+---
+layout: default
+refactor: true
+pagination:
+  enabled: true
+  collection: library
+  per_page: 10
+  permalink: '/page/:num'
+  sort_field: 'date'
+  sort_reverse: true
+---
+
+{% include lang.html %}
+
+{% assign items = paginator.posts | default: site.library %}
+{% assign items = items | where_exp: 'item', 'item.hidden != true' %}
+
+<div class="library-intro d-flex flex-column flex-md-row align-items-md-center mb-4 px-xl-1">
+  <div>
+    <p class="eyebrow mb-2"><i class="fas fa-layer-group me-2"></i>Library</p>
+    <h1 class="mb-2">나의 라이브러리</h1>
+    <p class="text-muted mb-0">책, 영화, 음악 등 다양한 콘텐츠를 기록하는 공간입니다.</p>
+  </div>
+</div>
+
+<div class="library-filters d-flex flex-wrap gap-2 mb-4 px-xl-1">
+  <button class="filter-btn active" data-filter="all">
+    <i class="fas fa-border-all me-1"></i>전체
+  </button>
+  <button class="filter-btn filter-btn--book" data-filter="book">
+    <i class="fas fa-book me-1"></i>책
+  </button>
+  <button class="filter-btn filter-btn--movie" data-filter="movie">
+    <i class="fas fa-film me-1"></i>영화
+  </button>
+  <button class="filter-btn filter-btn--music" data-filter="music">
+    <i class="fas fa-music me-1"></i>음악
+  </button>
+</div>
+
+<div id="library-list" class="flex-grow-1 px-xl-1">
+  {% for item in items %}
+  {% assign post = item %}
+  {% assign mtype = item.media_type | default: 'book' %}
+  <article class="card-wrapper card library-card" data-type="{{ mtype }}">
+    <a href="{{ item.url | relative_url }}" class="post-preview d-block">
+      <div class="card-body d-flex flex-column flex-md-row gap-3">
+        {% if item.image %}
+        {% assign src = item.image.path | default: item.image %}
+        {% unless src contains '//' %}
+        {% assign src = item.media_subpath | append: '/' | append: src | replace: '//', '/' %}
+        {% endunless %}
+        {% assign alt = item.image.alt | xml_escape | default: 'Cover image' %}
+        {% assign lqip = null %}
+        {% if item.image.lqip %}
+        {% capture lqip %}lqip="{{ item.image.lqip }}"{% endcapture %}
+        {% endif %}
+        <div class="library-thumb">
+          <div class="ratio ratio-3x4">
+            <img src="{{ src | relative_url }}" alt="{{ alt }}" {{ lqip }}>
+          </div>
+        </div>
+        {% else %}
+        <div class="library-thumb placeholder">
+          <div class="ratio ratio-3x4 d-flex align-items-center justify-content-center text-muted">
+            <i class="fas fa-image fa-2x"></i>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="flex-grow-1 d-flex flex-column">
+          <div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+            {% if mtype == 'movie' %}
+            <span class="badge rounded-pill media-badge media-badge--movie">
+              <i class="fas fa-film fa-fw me-1"></i>Movie
+            </span>
+            {% elsif mtype == 'music' %}
+            <span class="badge rounded-pill media-badge media-badge--music">
+              <i class="fas fa-music fa-fw me-1"></i>Music
+            </span>
+            {% else %}
+            <span class="badge rounded-pill media-badge media-badge--book">
+              <i class="fas fa-book fa-fw me-1"></i>Book
+            </span>
+            {% endif %}
+            {% if item.status %}
+            <span class="badge rounded-pill library-status">
+              <i class="fas fa-flag fa-fw me-1"></i>{{ item.status }}
+            </span>
+            {% endif %}
+          </div>
+
+          <h1 class="card-title my-1">{{ item.title }}</h1>
+
+          <div class="card-text content mt-2 mb-3">
+            <p>{% include post-description.html %}</p>
+          </div>
+
+          <div class="post-meta d-flex flex-wrap align-items-center gap-3">
+            <span class="meta-chip">
+              <i class="far fa-calendar fa-fw me-1"></i>
+              {% include datetime.html date=item.date lang=lang %}
+            </span>
+            {% if item.author %}
+            <span class="meta-chip">
+              <i class="fas fa-user-pen fa-fw me-1"></i>{{ item.author }}
+            </span>
+            {% endif %}
+            {% if item.categories.size > 0 %}
+            <span class="meta-chip">
+              <i class="far fa-folder-open fa-fw me-1"></i>
+              {% assign category_base = "/library/categories/" %}
+              {% for category in item.categories %}
+              <a href="{{ site.baseurl }}{{ category_base }}{{ category | slugify | url_encode }}/">{{ category }}</a>
+              {%- unless forloop.last -%}, {% endunless %}
+              {% endfor %}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </a>
+  </article>
+  {% endfor %}
+</div>
+<!-- #library-list -->
+
+{% if paginator.total_pages > 1 %}
+{% include post-paginator.html %}
+{% endif %}
+
+<script>
+(function () {
+  const buttons = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.library-card');
+
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+
+      var filter = btn.getAttribute('data-filter');
+      cards.forEach(function (card) {
+        if (filter === 'all' || card.getAttribute('data-type') === filter) {
+          card.style.display = '';
+          card.style.opacity = '0';
+          requestAnimationFrame(function () {
+            card.style.opacity = '1';
+          });
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+})();
+</script>
