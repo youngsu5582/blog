@@ -16,7 +16,7 @@ lang: ko
 ---
 > 이번에 소규모 해커톤을 갔다와서 간략하게만 적어본다.
 
-![image](https://darhcarwm16oo.cloudfront.net/2bd12e83a63290bb176107d009cae5ce.png)
+> 우테코 슬랙에 올라온 해커톤 공지 스크린샷
 
 우테코 슬랙에 올라온 글을 보고 할까, 말까? 고민하다가 신청했다.
 신청한 이유는 AI Agent SDK 가 뭔지 궁금하기도 했고, 오랜만에 다른 도메인의 코드를 짜보고 싶다는 생각이 있었다.
@@ -42,22 +42,22 @@ lang: ko
 
 ### 레포지토리 분석 & 설계
 
-![500](https://darhcarwm16oo.cloudfront.net/1b7d3e41c7487846300ebe5f7d6c4a67.png)
+> Gemini를 통한 레포지토리 분석 화면
 
-![500](https://darhcarwm16oo.cloudfront.net/e316ff64ecf87095c32f27e38a9a4a85.png)
+> 프로젝트 구조 및 기술 스택 분석 내용
 
 레포지토리를 분석하고
 내가 전날 생각한 아이디어를 Gemini 에게 구체화 한 내용을 넣고 구현할 수 있는지를 질문했었다.(아래 참고)
 
 기존 다른 [Skillthon](https://www.linkedin.com/posts/gb-jeong_skillthon%EC%97%90%EC%84%9C-8%EA%B0%9C%EC%9D%98-claude-code-%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8%EC%9D%B4-%EB%A7%8C%EB%93%A4%EC%96%B4%EC%A1%8C%EC%8A%B5%EB%8B%88%EB%8B%A4-activity-7420974941359185920-L3Tq/?originalSubdomain=kr) 이라는 곳에서 나온 예시들을 넣어서
 
-![500](https://darhcarwm16oo.cloudfront.net/d2bc15b8a53e20f200fefade97cfb1b7.png)
+> Skillthon 참고 예시 목록
 
-![500](https://darhcarwm16oo.cloudfront.net/dba64369932d68989bb869baabfb0438.png)
+> Claude Code 플러그인 예시 설명
 
 유의미한 예시를 받아놓고
 
-![500](https://darhcarwm16oo.cloudfront.net/c186811efaa509a04056fca7a9ce2975.png)
+> GitHub 가이드라인 기반 구현 가능성 검토 화면
 
 제공받은 깃허브의 가이드라인을 넣어서 가능한지 및 방향성을 질문했다.
 그리고, 이를 기반으로 Plan 모드로 구현 계획서 및 타임 테이블을 작성했다.
@@ -66,7 +66,7 @@ lang: ko
 
 그 사이, 해당 애플리케이션에서 배포를 하는 방법을 가이드라인에 따라 알아서 진행되게 했다.
 
-![500](https://darhcarwm16oo.cloudfront.net/e56b3d614501a9f186b5fba3aa90fd98.png)
+> 배포 가이드라인 체크리스트
 
 와 같은 기준이 있었다.
 하지만, 배포는 Vercel & DB 는 Supabase & Agent SDK 는 Moru 로 전부 나한테 낯설었다.
@@ -81,15 +81,15 @@ Claude Agent SDK를 웹에 배포하려면 Moru가 아니더라도 어떤 형태
 해당 내용 기반으로 같이 배포 해보자.
 ```
 
-![500](https://darhcarwm16oo.cloudfront.net/a7877bdc287fbc897b53be74f7a24508.png)
+> Moru, Vercel, Supabase 설정 과정 스크린샷
 
 Cluade 함께 차례대로 설정을 했다.
 
 ### 문서 처리 & 잡무
 
-![500](https://darhcarwm16oo.cloudfront.net/10c96caa57e0a71e68cf61d4bbd3be1b.png)
+> README 문서 작성 및 정리 작업
 
-![500](https://darhcarwm16oo.cloudfront.net/1d364b5297e52b0c554c50aab8c15ee1.png)
+> 프로젝트 설정 파일 구성 내용
 
 나머지는 진행하며 처리하는 식으로 했다.
 
@@ -100,45 +100,45 @@ Cluade 함께 차례대로 설정을 했다.
 
 그리고, 대화를 하는게 의도인거 같아서
 
-![500](https://darhcarwm16oo.cloudfront.net/1fc4a95c7d33fcd96e635473f2bc2617.png)
+> 사용자와 AI 간 대화 인터페이스 구현 화면
 
 AI 끼리 대화가 아니라, 나와 AI 가 대화하는 형태로 구현했다.
 
 > 사이트를 곧 닫을 예정이므로 깃허브 저장소로 대체한다.
 > [hackathon-toron](https://github.com/youngsu5582/hackathon-toron)
 
-![500](https://darhcarwm16oo.cloudfront.net/5705dda3bd75eb92d9156d4568823b18.png)
+> 토론 주제 선택 화면
 
 1. 사진과 같이 주제를 선택
 
-![500](https://darhcarwm16oo.cloudfront.net/eb3e26795447172cd687a4b2d6ea2785.png)
+> 토론 입장(찬성/반대) 선택 화면
 
 2. 입장을 선택
 
-![500](https://darhcarwm16oo.cloudfront.net/2aa32edfc2167b53fcb8150ebda257a6.png)
+> 토론 주제 설명 및 시작 화면
 
 3. 주제에 대한 설명후 토론 시작
 
 
-![500](https://darhcarwm16oo.cloudfront.net/f2cbf06343a378622ed6aae2e1ad65ad.png)
+> 반박 말투 시스템 프롬프트 설정 코드
 
 a. 반박을 위한 반박 말투로 시스템 프롬프트 설정
 
-![500](https://darhcarwm16oo.cloudfront.net/e1fad1384c0957698b75dac484534d98.png)
+> 웹 검색을 통한 반박 근거 수집 과정
 
 b. 웹에서 반박한 근거를 가져온다.
 
-![500](https://darhcarwm16oo.cloudfront.net/82ca0241b976c4766e4e41d1af792e01.png)
+> bash 명령어를 통한 근거 준비 과정
 
 c. bash 권한을 통해 직접 반박할 근거를 준비한다.
 
-![500](https://darhcarwm16oo.cloudfront.net/bdd0eb0c027a24c3258549cf6cb3b895.png)
+> 관중석 의견 제시 기능 화면
 
 4. 관중석에선 의견을 제시할 수 있게 한다.
 
 > 참전 로직은 확인 못했다.
 
-![500](https://darhcarwm16oo.cloudfront.net/c6859dc1bf545094a204174435b84200.png)
+> 진행중/과거 토론 결과 조회 화면
 
 5. 진행중인 토론과 예전 토론들의 결과를 조회하게 한다.
 
@@ -215,7 +215,7 @@ LLM 은 내 개인적인 의견으론 이미 특이점을 넘긴거 같다...
 
 ## 마무리
 
-![500](https://darhcarwm16oo.cloudfront.net/ed9ed06b41b66907bc23dcdb074cc1a0.png)
+> 해커톤 3등 수상 사진
 
 해커톤에서 3등을 차지하며 마무리했다. 처음 참여했지만 매우 흥미로운 경험이었다.
 요새, 숏폼에 두뇌가 절여져 간다고 느꼈는데 4시간 동안 몰입을 해서 꽤나 뿌듯하기도 했고!

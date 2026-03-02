@@ -157,7 +157,17 @@ VM 을 통해,  `전부 다 보이는 데이터` -> 테이블 스킵! 이 가능
 이때, 다른 곳에서 1개의 계좌를 만들어주면..?
 -> 4개가 된다.
 
-![500](https://darhcarwm16oo.cloudfront.net/5b432246d2faf472ee8d12bf79de87e3.png)
+**PostgreSQL 격리 수준별 동시성 이상 현상**
+
+| 격리 수준 (Isolation Level) | Dirty Read | Non-Repeatable Read | Phantom Read | Serialization Anomaly |
+|---------------------------|------------|---------------------|--------------|----------------------|
+| Read Uncommitted          | 불가능 (PostgreSQL은 RC로 동작) | 가능 | 가능 | 가능 |
+| Read Committed (기본값)   | 불가능 | 가능 | 가능 | 가능 |
+| Repeatable Read           | 불가능 | 불가능 | 불가능 (PostgreSQL 특성) | 가능 |
+| Serializable              | 불가능 | 불가능 | 불가능 | 불가능 |
+
+> PostgreSQL은 MVCC 아키텍처 특성상 Read Uncommitted를 지원하지 않으며, 해당 수준으로 설정해도 실제로는 Read Committed로 동작한다.
+> Repeatable Read 수준에서도 Snapshot Isolation 덕분에 Phantom Read가 방지된다.
 
 격리 수준에 따라, 이를 보장해주거나 허용해준다.
 하지만, Serializable 을 하면 너무 완벽하기에 ( 행 단위로 꼼꼼히 처리 ) 속도가 느리다.
@@ -206,13 +216,36 @@ PostgreSQL 은 데이터를 왠만해선 덮어씌우거나, 지우지 않는다
 
 776번 트랜잭션이 새로운 데이터를 삽입했다면?
 
-![500](https://darhcarwm16oo.cloudfront.net/88be9a4f03afbada77dd23adcdb85c70.png)
+**INSERT 동작 - 새로운 튜플 생성**
+
+트랜잭션 776이 `INSERT INTO users (name, age) VALUES ('Alice', 25)` 를 실행하면:
+
+| ctid | xmin | xmax | name | age |
+|------|------|------|------|-----|
+| (0,1) | 776 | 0 | Alice | 25 |
+
+- **xmin = 776**: 이 튜플은 트랜잭션 776이 생성했음
+- **xmax = 0**: 아직 삭제되거나 업데이트되지 않음 (유효한 최신 버전)
+- ctid는 튜플의 물리적 위치 (페이지 번호, 아이템 번호)
 
 새로운 데이터가 생성된다. ( xmin 은 776, xmax 는 0 )
 
 이 데이터를 778번 트랜잭션이 업데이트 한다면?
 
-![500](https://darhcarwm16oo.cloudfront.net/1bc1b81471558cdc57b415908940aef5.png)
+**UPDATE 동작 - 기존 튜플 만료 + 새 튜플 생성**
+
+트랜잭션 778이 `UPDATE users SET age = 26 WHERE name = 'Alice'` 를 실행하면:
+
+| ctid | xmin | xmax | name | age | 상태 |
+|------|------|------|------|-----|------|
+| (0,1) | 776 | **778** | Alice | 25 | 만료됨 (old version) |
+| (0,2) | **778** | 0 | Alice | **26** | 유효함 (new version) |
+
+**변경 내용:**
+- 기존 튜플 (0,1)의 xmax가 778로 설정됨 → "트랜잭션 778부터는 이 버전이 무효"
+- 새로운 튜플 (0,2)가 생성됨 → xmin=778, xmax=0
+- 물리적으로는 두 개의 튜플이 모두 존재 (MVCC)
+- 트랜잭션 ID에 따라 보이는 버전이 달라짐
 
 - 기존 데이터의 xmax 가 778번으로 채워진다
 - 새로운 데이터가 생성된다. ( xmin 은 778번, xmax 는 0 )

@@ -33,15 +33,15 @@ This is a project that guides users through implementing elements we've used our
 - Shell
 - SQLite
 
-![image](https://darhcarwm16oo.cloudfront.net/2017fd93590993e6449c9c2381ac3e2f.png)
+> codecrafters project list screen
 
 There is a subscription plan (which seems a bit pricey even with the discount), but they offer one challenge per month.
 
-![image](https://darhcarwm16oo.cloudfront.net/2f6dceb3412997773d3160a4b1e97648.png)
+> codecrafters subscription pricing screen
 
 You can undertake missions using various languages such as C, C#, Go, Kotlin, Java, Javascript, and Typescript.
 
-![image](https://darhcarwm16oo.cloudfront.net/1e5b285eff83d0ea90209f0c5de27350.png)
+> codecrafters supported languages list
 
 This month, the Shell implementation was available for free, so I decided to try it. Additionally, I wanted to learn Kotlin, so I proceeded with Kotlin.
 
@@ -49,7 +49,7 @@ This month, the Shell implementation was available for free, so I decided to try
 
 The process is simple:
 
-![500](https://darhcarwm16oo.cloudfront.net/e4964449aabffbe5c5a996aea1c7f55f.png)
+> codecrafters workflow guide
 
 1. Complete the given task.
 2. Then, commit the work – `git commit -am "[any message]"`
@@ -57,7 +57,7 @@ The process is simple:
 
 The website then runs tests.
 
-![image](https://darhcarwm16oo.cloudfront.net/97014be314d3e9d733a04795ca267fdd.png)
+> codecrafters website test execution screen
 
 If the tests pass, you move on to the next step.
 
@@ -106,7 +106,7 @@ Although our code uses byte arrays directly, I saw the potential to improve heap
 
 > Of course, this would entail a major code overhaul...
 
-![image](https://darhcarwm16oo.cloudfront.net/def5179f737d60cff054a3e801b2b16e.png)
+> ProcessBuilder and Stream learning notes
 
 ### The Importance of Testing
 
@@ -164,13 +164,13 @@ After that, I validated results through input-output.
 
 Eventually, I wrote tests for every step.
 
-![image](https://darhcarwm16oo.cloudfront.net/1b3da3223852b920bac2464cf414bd5b.png)
+> List of 29 integration tests written
 
 I wrote 29 tests.
 
 Then,
 
-![image](https://darhcarwm16oo.cloudfront.net/f09c732e7464f4e3eac91b0c668d77fd.png)
+> Test code for detailed logic of each object
 
 I also wrote tests for each object to verify specific logic. With this, I was able to:
 
@@ -196,7 +196,7 @@ I did not complete all the steps.
 - Redirection
 - Pipeliens
 
-![500](https://darhcarwm16oo.cloudfront.net/71da7406964143da5c18fb6dda850194.png)
+> Completed Shell implementation stages (Basic Stages, Navigation, Quoting, Redirection, Pipeliens)
 
 I completed these.
 

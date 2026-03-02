@@ -18,7 +18,7 @@ lang: en
 ---
 > I briefly summarize the small-scale hackathon I recently attended.
 
-![image](https://darhcarwm16oo.cloudfront.net/2bd12e83a63290bb176107d009cae5ce.png)
+> Hackathon announcement screenshot from WTC Slack
 
 I saw a post on the WTC Slack and pondered whether to apply. My curiosity about what the AI Agent SDK is and the desire to code in a different domain were my primary motivations. Additionally, I've noticed a significant improvement in LLMs (like Claude) performance recently, and I wanted to see how well they perform.
 
@@ -41,21 +41,21 @@ The flow I approached with Vibe Coding was as follows.
 
 ### Repository Analysis & Design
 
-![500](https://darhcarwm16oo.cloudfront.net/1b7d3e41c7487846300ebe5f7d6c4a67.png)
+> Repository analysis through Gemini
 
-![500](https://darhcarwm16oo.cloudfront.net/e316ff64ecf87095c32f27e38a9a4a85.png)
+> Project structure and tech stack analysis details
 
 I analyzed the repository and infused it with my idea I had considered since the day before, asking Gemini whether it could be implemented. (see below)
 
 By inserting examples from a place called other [Skillthon](https://www.linkedin.com/posts/gb-jeong_skillthon%EC%97%90%EC%84%9C-8%EA%B0%9C%EC%9D%98-claude-code-%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8%EC%9D%B4-%EB%A7%8C%EB%93%A4%EC%96%B4%EC%A1%8C%EC%8A%B5%EB%8B%88%EB%8B%A4-activity-7420974941359185920-L3Tq/?originalSubdomain=kr)
 
-![500](https://darhcarwm16oo.cloudfront.net/d2bc15b8a53e20f200fefade97cfb1b7.png)
+> Skillthon reference example list
 
-![500](https://darhcarwm16oo.cloudfront.net/dba64369932d68989bb869baabfb0438.png)
+> Claude Code plugin example descriptions
 
 I secured meaningful examples
 
-![500](https://darhcarwm16oo.cloudfront.net/c186811efaa509a04056fca7a9ce2975.png)
+> GitHub guidelines based feasibility review screen
 
 I then asked questions about feasibility and direction by incorporating the provided GitHub guidelines. Based on this, I created an implementation plan and timetable with Plan mode.
 
@@ -63,7 +63,7 @@ I then asked questions about feasibility and direction by incorporating the prov
 
 Meanwhile, the method of deploying the application was set to progress autonomously according to the guidelines.
 
-![500](https://darhcarwm16oo.cloudfront.net/e56b3d614501a9f186b5fba3aa90fd98.png)
+> Deployment guidelines checklist
 
 There was a standard like this.
 However, the deployment was unfamiliar to me, as it was with Vercel, Supabase for DB, and Agent SDK with Moru.
@@ -78,15 +78,15 @@ Even if it’s not Moru, a sandbox of some form is necessary to deploy the Claud
 Let's deploy together based on this content.
 ```
 
-![500](https://darhcarwm16oo.cloudfront.net/a7877bdc287fbc897b53be74f7a24508.png)
+> Moru, Vercel, Supabase setup process screenshot
 
 I sequentially set it up with Claude.
 
 ### Document Processing & Miscellaneous Tasks
 
-![500](https://darhcarwm16oo.cloudfront.net/10c96caa57e0a71e68cf61d4bbd3be1b.png)
+> README documentation writing and cleanup work
 
-![500](https://darhcarwm16oo.cloudfront.net/1d364b5297e52b0c554c50aab8c15ee1.png)
+> Project configuration file setup details
 
 The rest were handled as they progressed.
 
@@ -97,44 +97,44 @@ While I didn't complete all the features I planned initially, I managed to estab
 
 Since the intention was to facilitate a conversation,
 
-![500](https://darhcarwm16oo.cloudfront.net/1fc4a95c7d33fcd96e635473f2bc2617.png)
+> User-AI conversation interface implementation screen
 
 I implemented it as a conversation between me and AI rather than AIs talking to each other.
 
 > Since the site will soon be closed, it is replaced with a GitHub repository.
 > [hackathon-toron](https://github.com/youngsu5582/hackathon-toron)
 
-![500](https://darhcarwm16oo.cloudfront.net/5705dda3bd75eb92d9156d4568823b18.png)
+> Discussion topic selection screen
 
 1. Select a topic as shown in the photo
 
-![500](https://darhcarwm16oo.cloudfront.net/eb3e26795447172cd687a4b2d6ea2785.png)
+> Discussion position (agree/disagree) selection screen
 
 2. Choose a position
 
-![500](https://darhcarwm16oo.cloudfront.net/2aa32edfc2167b53fcb8150ebda257a6.png)
+> Topic explanation and discussion start screen
 
 3. Begin the discussion after providing an explanation of the topic
 
-![500](https://darhcarwm16oo.cloudfront.net/f2cbf06343a378622ed6aae2e1ad65ad.png)
+> Rebuttal tone system prompt configuration code
 
 a. Set system prompts in a rebutting voice tone
 
-![500](https://darhcarwm16oo.cloudfront.net/e1fad1384c0957698b75dac484534d98.png)
+> Web search based rebuttal evidence collection process
 
 b. Pull rebuttal evidence from the web.
 
-![500](https://darhcarwm16oo.cloudfront.net/82ca0241b976c4766e4e41d1af792e01.png)
+> Evidence preparation process through bash commands
 
 c. Prepare rebuttal evidence through bash permissions.
 
-![500](https://darhcarwm16oo.cloudfront.net/bdd0eb0c027a24c3258549cf6cb3b895.png)
+> Audience opinion submission feature screen
 
 4. Allow the audience to present opinions.
 
 > The participation logic was not verified.
 
-![500](https://darhcarwm16oo.cloudfront.net/c6859dc1bf545094a204174435b84200.png)
+> Ongoing/past discussion results viewing screen
 
 5. Allow viewing of ongoing and past discussion results.
 
@@ -210,7 +210,7 @@ Although now, personally created products seem to be pouring out…
 
 ## Conclusion
 
-![500](https://darhcarwm16oo.cloudfront.net/ed9ed06b41b66907bc23dcdb074cc1a0.png)
+> Third place award photo from the hackathon
 
 We concluded the hackathon by achieving third place. Although it was my first participation, it was a highly intriguing experience. Lately, although I’ve felt like my brain is marinating in short-form content, focusing for 4 hours felt quite fulfilling!
 
