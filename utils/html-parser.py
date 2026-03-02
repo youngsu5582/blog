@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-url = "https://youngsu5582.life/tags/"
+url = "https://youngsu5582.today/tags/"
 response = requests.get(url)
 soup = BeautifulSoup(response.text, 'html.parser')
 

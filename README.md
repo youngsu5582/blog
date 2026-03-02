@@ -7,7 +7,7 @@
 
 개인 기술 블로그 리포지토리입니다. Jekyll 기반으로 구축되었으며, GitHub Actions와 AI를 활용하여 콘텐츠 생성부터 발행까지의 과정을 자동화했습니다.
 
-**[블로그 바로가기](https://youngsu5582.life/archives/)**
+**[블로그 바로가기](https://youngsu5582.today/archives/)**
 
 ---
 

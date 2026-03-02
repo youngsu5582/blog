@@ -314,8 +314,8 @@ If two frogs in a well talk about the world, can they accurately describe the wo
 After the interview is over, I think it's essential to organize the questions and do a self-retrospective on the interview.
 Wouldn't it be too unfair to make the same mistake again on a question you received, similar to a coding test?
 
-- Please explain how the Dispatcher Servlet is configured - [Do we use the DispatcherServlet?](https://youngsu5582.life/posts/DispatcherServlet-%EC%9D%84-%EC%9A%B0%EB%A6%AC%EA%B0%80-%EC%82%AC%EC%9A%A9%ED%95%98%EB%82%98%EC%9A%94/)
-- Why are multiple thread pools necessary? - [Threads, Thread Pools in Java (Why are multiple thread pools better than a single thread pool?)](https://youngsu5582.life/posts/%EC%8A%A4%EB%A0%88%EB%93%9C%EC%8A%A4%EB%A0%88%EB%93%9C%ED%92%80-in-Java/)
+- Please explain how the Dispatcher Servlet is configured - [Do we use the DispatcherServlet?](/posts/DispatcherServlet-%EC%9D%84-%EC%9A%B0%EB%A6%AC%EA%B0%80-%EC%82%AC%EC%9A%A9%ED%95%98%EB%82%98%EC%9A%94/)
+- Why are multiple thread pools necessary? - [Threads, Thread Pools in Java (Why are multiple thread pools better than a single thread pool?)](/posts/%EC%8A%A4%EB%A0%88%EB%93%9C%EC%8A%A4%EB%A0%88%EB%93%9C%ED%92%80-in-Java/)
 
 I learned how to answer the questions and organized the flow of the interview.
 
@@ -358,7 +358,7 @@ The result may not be good. However, the methods used for that result (resume, p
 It's similar to the `interview study and retrospective` part, but
 
 - You lack project experience? - I started a side project. - [Lotto service available with cards and simple payment](https://github.com/youngsu5582/lotto)
-- You don't have many projects that have actually been deployed? - I deployed a side project 2 days after the interview. [Deploying with only the free tier](https://youngsu5582.life/posts/%ED%94%84%EB%A6%AC%ED%8B%B0%EC%96%B4%EB%A1%9C%EB%A7%8C-%EB%B0%B0%ED%8F%AC%ED%95%B4%EB%B3%B4%EA%B8%B0/) , [Deployed service address](https://lotto.web.youngsu5582.life/)
+- You don't have many projects that have actually been deployed? - I deployed a side project 2 days after the interview. [Deploying with only the free tier](/posts/%ED%94%84%EB%A6%AC%ED%8B%B0%EC%96%B4%EB%A1%9C%EB%A7%8C-%EB%B0%B0%ED%8F%AC%ED%95%B4%EB%B3%B4%EA%B8%B0/)
 
 There is something that people often say.
 `Let's do it 'well', not 'hard'`
@@ -406,7 +406,7 @@ Even if you live diligently, I hope you don't lose yourself.
 
 ## Conclusion
 
-Currently, I am planning to transfer my personal blog (I plan to move my blog to [Lee Young-soo's Development Blog](https://youngsu5582.life/)), organize what I have learned, and plan a trip.
+Currently, I am planning to transfer my personal blog (I plan to move my blog to [Lee Young-soo's Development Blog](/)), organize what I have learned, and plan a trip.
 Now that I have to start anew, I will take a short break and then move forward again.
 
 I applied to about 30 companies and had 8 interviews. I think they were all valuable experiences that made me a more growing developer.

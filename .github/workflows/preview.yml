@@ -60,8 +60,8 @@ jobs:
 
       - name: 🔎 2. Search for hardcoded URL in built files
         run: |
-          echo "--- Searching for 'youngsu5582.life' in _site directory ---"
-          grep -r "youngsu5582.life" _site || echo "✅ Production URL not found in built files. This is correct."
+          echo "--- Searching for 'youngsu5582.today' in _site directory ---"
+          grep -r "youngsu5582.today" _site || echo "✅ Production URL not found in built files. This is correct."
           echo "----------------------------------------------------------"
 
       - name: Upload artifact

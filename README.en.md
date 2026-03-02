@@ -7,7 +7,7 @@
 
 This is a personal tech blog repository. It is built with Jekyll and automates the process from content creation to publishing using GitHub Actions and AI.
 
-**[Go to Blog](https://youngsu5582.life/archives/)**
+**[Go to Blog](https://youngsu5582.today/archives/)**
 
 ---
 

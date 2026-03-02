@@ -622,7 +622,7 @@ Java objects have a header containing information for identification and managem
 The header holds object hashcode, GC information, lock, etc.
 
 > If you're curious about this header, I recommend exploring with a library called Java Object Layout.
-> [Useless Java Trivia with JOL](https://youngsu5582.life/posts/useless-java-trivia-with-jol) could also be a good reference for this content.
+> [Useless Java Trivia with JOL](/posts/useless-java-trivia-with-jol) could also be a good reference for this content.
 
 It says the layout of this header has been compressed and improved to reduce size.
 For a developer, it's a happy situation where object memory usage automatically reduces without doing anything.

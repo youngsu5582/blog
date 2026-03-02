@@ -169,7 +169,7 @@ Moreover, I realized the importance of presentations.
 Seeing other people's presentations, I understood that effectively PR-ing one's product is a significant capability.
 No matter how well-made, if no one is interested or finds it intriguing, it becomes pointless…
 
-I realized, just like at [YOOCON](https://youngsu5582.life/posts/youthcon-presentation-reflections/), that this area needs more improvement.
+I realized, just like at [YOOCON](/posts/youthcon-presentation-reflections/), that this area needs more improvement.
 
 ### The Power of LLM
 

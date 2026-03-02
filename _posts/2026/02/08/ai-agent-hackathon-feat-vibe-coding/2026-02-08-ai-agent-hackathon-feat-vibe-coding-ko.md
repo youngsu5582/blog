@@ -173,7 +173,7 @@ AND usename = 'postgres';
 다른 분들의 발표를 보며, 자신의 제품을 잘 PR 하는 것도 큰 능력이라고 받았다.
 아무리 잘 만들어도, 아무도 관심없고 흥미를 가지지 않으면 의미없을 테니까..
 
-[유스콘](https://youngsu5582.life/posts/youthcon-presentation-reflections/) 에서 처음 발표를 하고 느낀거처럼 이 부분도 좀 더 개선을 해나가야겠다.
+[유스콘](/posts/youthcon-presentation-reflections/) 에서 처음 발표를 하고 느낀거처럼 이 부분도 좀 더 개선을 해나가야겠다.
 
 ### LLM 의 위력
 

@@ -108,7 +108,7 @@ From what I've felt while using it,
 - The value of a combination does not change. (e.g., 1 is fixed as 16, `cab` is fixed as 55893)
 - It creates an optimal set of subwords. (Even if 12346 appears about 10 times, it may be split into 123 and 46)
 
-For a general article ([Ending a 3-month job search](https://youngsu5582.life/posts/3%EA%B0%9C%EC%9B%94-%EA%B0%94%EC%9D%98-%EC%B7%A8%EC%A4%80%EC%9D%84-%EB%81%95%EB%82%B4%EB%A9%B0/), 6652 words),
+For a general article ([Ending a 3-month job search](/posts/3%EA%B0%9C%EC%9B%94-%EA%B0%94%EC%9D%98-%EC%B7%A8%EC%A4%80%EC%9D%84-%EB%81%95%EB%82%B4%EB%A9%B0/), 6652 words),
 about 9350 tokens were generated.
 
 ### DALL-E 3
