@@ -15,11 +15,26 @@ page_id: >-
 permalink: >-
   /posts/spring-에서-rabbitmq-보일러-플레이트-코드-제거하기-feat-declares-rabbitlistenerendpointregistrar/
 author: 이영수
+image:
+  path: assets/img/thumbnail/2026-02-13-spring-에서-rabbitmq-보일러-플레이트-코드-제거하기-feat-declares-rabbitlistenerendpointregistrar.png
 date: 2026-02-13T13:31:31.469Z
 ---
+
 현재, Claude 와 함께 코드 개선에 관심을 가지고 있다.
 현재, 수많은 곳에서 발생한 보일러 플레이트를 제거하는걸 시도하고 있다.
-그 중, RabbitMQ 설정이 상당히 많이 반복되어 쌓여있어서 방법을 찾아내서 간단히 정리한다.
+그 중, RabbitMQ 설정이 상당히 많이 반복되어 있었다. 이를 해결할 방법을 찾아내서 간단히 정리한다.
+
+### 왜 변경했는가
+
+사실, 보일러 플레이트 코드는 건들기 애매한 코드다.
+- '기존에 잘 동작하는데?'
+- '코드도 안 어려운데?'
+
+라는 얘기가 나오면, 고칠수가 없기 때문이다.
+그럼에도 개선을 하는게 맞다고 생각한다.
+
+50번이 반복되었는데, 이 50번을 한번에 수정해야한다면 자신이 놓친게 없는지 불안할것이다.
+이런 점들을 해결하기 위해 우리는 반복된 코드들을 제거해야만 한다.
 
 ## Declares
 
@@ -52,9 +67,6 @@ public String getTextToVideoQueueName() {
 ```
 
 Exchange 는 공동으로 사용한다고 해도, 50개의 Queue 를 사용하려면 100개의 Bean 과 수많은 중복 코드가 발생한다.
-
-> 실제로, 지금 우리 코드가 이러고 있다..
-
 이와 같은 구조는 유지보수가 어렵다. 이를 해결해주는게 Declares 이다!!
 
 ### Declares
@@ -96,6 +108,7 @@ public Declarables externalQueueDeclarables(List<QueueManager> managers, TopicEx
 ```
 
 와 같이 여러개의 Queue 와 Binding 들을 하나의 Bean 과 stream 코드로 작성할 수 있다!
+그래서, 코드를 하나씩 찾아가서 수정할 필요없이 interface 수정 및 Declarables 로직만 수정하면 모든 요소에 적용되는걸 보장할 수 있다.
 
 ## RabbitListenerEndpointRegistrar
 
@@ -206,6 +219,6 @@ registrar.registerEndpoint(endpoint);
 - 코드 동작 보장의 어려움
 - 리뷰어의 피로
 
-자기가 맡거나 확장해나갈 때, 때가 된거 같으면 바로 코드를 개선하는게 좋은거 같다.
+자기가 이슈를 맡거나 코드를 작성할 때, 때가 된거 같으면 바로 코드를 개선하는게 좋은거 같다.
 
 - [참고 링크](https://medium.com/@taesulee93/spring-for-rabbitmq-in-action-declarables%EC%9D%84-%ED%99%9C%EC%9A%A9%ED%95%9C-exchange-queue-binding-dlq-%EA%B0%84%ED%8E%B8-%EC%84%A4%EC%A0%95-a248744d6240)
