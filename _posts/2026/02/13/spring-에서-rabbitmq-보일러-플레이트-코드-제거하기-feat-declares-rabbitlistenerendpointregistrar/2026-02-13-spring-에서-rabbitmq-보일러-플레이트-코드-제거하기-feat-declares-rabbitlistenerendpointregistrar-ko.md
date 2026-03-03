@@ -16,8 +16,10 @@ permalink: >-
   /posts/spring-에서-rabbitmq-보일러-플레이트-코드-제거하기-feat-declares-rabbitlistenerendpointregistrar/
 author: 이영수
 image:
-  path: assets/img/thumbnail/2026-02-13-spring-에서-rabbitmq-보일러-플레이트-코드-제거하기-feat-declares-rabbitlistenerendpointregistrar.png
+  path: >-
+    assets/img/thumbnail/2026-02-13-spring-에서-rabbitmq-보일러-플레이트-코드-제거하기-feat-declares-rabbitlistenerendpointregistrar.png
 date: 2026-02-13T13:31:31.469Z
+lang: ko
 ---
 
 현재, Claude 와 함께 코드 개선에 관심을 가지고 있다.
