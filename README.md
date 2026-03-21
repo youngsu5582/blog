@@ -1,3 +1,7 @@
+> **This repository has moved!**
+> 이 블로그 저장소는 [youngsu-blog](https://github.com/youngsu5582/youngsu-blog)로 이전되었습니다.
+> 새로운 저장소에서 최신 콘텐츠를 확인해주세요.
+
 # 이영수 기술 블로그
 
 [English](./README.en.md)
